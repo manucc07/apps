@@ -62,6 +62,95 @@
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     }
 
+    #help-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      color: var(--accent);
+      border: 1px solid var(--surface-border);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    #help-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(15px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 30000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+
+    #help-modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    #help-modal {
+      background: var(--bg-gradient);
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 30px;
+      border-radius: 24px;
+      border: 1px solid var(--surface-border);
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    #help-modal-overlay.active #help-modal {
+      transform: scale(1);
+    }
+
+    #help-modal h2 {
+      color: var(--accent);
+      margin-top: 0;
+      font-size: 24px;
+      text-align: center;
+    }
+
+    #help-modal ul {
+      padding-left: 20px;
+      line-height: 1.6;
+    }
+
+    #help-modal li {
+      margin-bottom: 15px;
+    }
+
+    .help-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: var(--surface);
+      border-radius: 6px;
+      margin-right: 8px;
+      font-size: 14px;
+    }
+
     #board {
       display: flex;
       flex-direction: column;
@@ -88,7 +177,7 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      gap: 20px;
+      gap: 60px;
       width: 100%;
       flex-wrap: wrap;
       margin-bottom: 10px;
@@ -108,36 +197,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 10;
     }
 
-    #filter-container {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: var(--surface);
-      padding: 15px;
-      border-radius: 16px;
-      border: 1px solid var(--surface-border);
-      backdrop-filter: blur(4px);
-    }
-
-    select, button {
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    #styleFilter {
-      width: 150px;
-      padding: 8px;
-      border-radius: 8px;
-      background: #1e293b;
-      color: white;
-      border: 1px solid var(--surface-border);
-      font-size: 12px;
-    }
-
-    .btn-main {
+    button {
       background: var(--accent);
       color: #0f172a;
       border: none;
@@ -422,6 +485,33 @@
       100% { transform: translate(var(--tx), var(--ty)) rotate(var(--tr)); opacity: 0; }
     }
 
+    #feedback-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 40000;
+      display: none;
+      opacity: 0;
+    }
+
+    .feedback-correct {
+      background: radial-gradient(circle, rgba(34, 197, 94, 0.4) 0%, transparent 70%);
+      animation: pulse-feedback 1s ease-out;
+      display: block !important;
+    }
+
+    .feedback-incorrect {
+      background: radial-gradient(circle, rgba(239, 68, 68, 0.4) 0%, transparent 70%);
+      animation: pulse-feedback 1s ease-out;
+      display: block !important;
+    }
+
+    @keyframes pulse-feedback {
+      0% { opacity: 0; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.2); }
+    }
+
   </style>
 </head>
 
@@ -438,16 +528,31 @@
   <input type="range" id="zoomRange" min="0.5" max="1.5" step="0.1" value="1">
 </div>
 
+<button id="help-btn" onclick="openHelp()">?</button>
+
+<div id="help-modal-overlay" onclick="closeHelp()">
+  <div id="help-modal" onclick="event.stopPropagation()">
+    <h2>Cómo Jugar</h2>
+    <ul>
+      <li><span class="help-icon">🔍</span> <strong>Vista Ampliada:</strong> Haz doble clic o doble toque sobre una carta para abrirla en grande y acceder a sus controles.</li>
+      <li><span class="help-icon">▶️</span> <strong>Escucha la Canción:</strong> Al pulsar Play, la canción sonará durante <strong>20 segundos</strong>. ¡Aprovecha el tiempo para adivinar!</li>
+      <li><span class="help-icon">🔁</span> <strong>Más Tiempo:</strong> Si necesitas otra oportunidad, pulsa Play de nuevo para escuchar otros <strong>20 segundos</strong> aleatorios de la canción.</li>
+      <li><span class="help-icon">📍</span> <strong>Colocación:</strong> Arrastra la carta a la línea de tiempo de tu equipo. Debes colocarla en el orden cronológico correcto según el año.</li>
+      <li><span class="help-icon">❌</span> <strong>Descarte:</strong> Si el jugador no coloca la carta correctamente en su cronología, la carta debe moverse a la <strong>pila de descartes</strong>.</li>
+      <li><span class="help-icon">🎨</span> <strong>Personalización:</strong> Puedes cambiar el <strong>color y el nombre</strong> del equipo pulsando sobre la burbuja de color o el nombre actual.</li>
+      <li><span class="help-icon">🏆</span> <strong>Objetivo:</strong> ¡Sé el primero en completar tu línea de tiempo sin errores!</li>
+    </ul>
+    <div style="text-align: center; margin-top: 20px;">
+      <button class="btn-main" onclick="closeHelp()" style="padding: 10px 30px; font-size: 16px;">¡Entendido!</button>
+    </div>
+  </div>
+</div>
+
 <div id="board">
   <div class="top-controls">
     <div id="deck"></div>
     <div id="discard">
       <div style="text-align:center; opacity: 0.4; font-size: 11px; font-weight: 600;">DESCARTES</div>
-    </div>
-    <div id="filter-container">
-      <select id="styleFilter">
-        <option value="ALL">Todos los estilos</option>
-      </select>
     </div>
   </div>
 
@@ -496,62 +601,64 @@
   <div id="playing-text">Sonando...</div>
 </div>
 
+<div id="feedback-overlay"></div>
+
 
 <audio id="player"></audio>
 
 <script>
   const cardsData = [
-    { author: "Celine Dion", year: 1997, title: "My Heart Will Go On", style: "Soundtrack", from: "Titanic" },
-    { author: "Randy Newman", year: 1995, title: "You've Got a Friend in Me", style: "Soundtrack", from: "Toy Story" },
-    { author: "Elton John", year: 1994, title: "Can You Feel the Love Tonight", style: "Soundtrack", from: "El rey león" },
-    { author: "Survivor", year: 1982, title: "Eye of the Tiger", style: "Rock", from: "Rocky III" },
-    { author: "Ray Parker Jr.", year: 1984, title: "Ghostbusters", style: "Pop", from: "Los Cazafantasmas" },
-    { author: "Ramin Djawadi", year: 2011, title: "Main Title", style: "TV Soundtrack", from: "Juego de tronos" },
-    { author: "Howard Shore", year: 2001, title: "The Breaking of the Fellowship", style: "Film Score", from: "El señor de los anillos: La comunidad del anillo" },
-    { author: "John Williams", year: 2001, title: "Hedwig's Theme", style: "Soundtrack", from: "Harry Potter y la piedra profesional" },
-    { author: "Idina Menzel", year: 2013, title: "Let It Go", style: "Soundtrack", from: "Frozen: El reino del hielo" },
-    { author: "Phil Collins", year: 1999, title: "You'll Be in My Heart", style: "Soundtrack", from: "Tarzán" },
-    { author: "Phil Collins", year: 1999, title: "Son of Man", style: "Soundtrack", from: "Tarzán" },
-    { author: "Donny Osmond", year: 1998, title: "I'll Make a Man Out of You", style: "Soundtrack", from: "Mulán" },
-    { author: "Hercules Cast", year: 1997, title: "Go the Distance", style: "Soundtrack", from: "Hércules" },
-    { author: "Pocahontas Cast", year: 1995, title: "Colors of the Wind", style: "Soundtrack", from: "Pocahontas" },
-    { author: "A Whole New World Cast", year: 1992, title: "A Whole New World", style: "Soundtrack", from: "Aladdín" },
-    { author: "Elton John", year: 1994, title: "Hakuna Matata", style: "Soundtrack", from: "El rey león" },
-    { author: "John Williams", year: 1993, title: "Theme from Jurassic Park", style: "Soundtrack", from: "Parque Jurásico" },
-    { author: "Klaus Badelt", year: 2003, title: "He's a Pirate", style: "Soundtrack", from: "Piratas del Caribe: La maldición de la Perla Negra" },
-    { author: "John Williams", year: 1980, title: "The Imperial March", style: "Soundtrack", from: "Star Wars: Episodio V – El Imperio contraataca" },
-    { author: "John Williams", year: 1981, title: "Raiders March", style: "Soundtrack", from: "En busca del arca perdida (Indiana Jones)" },
-    { author: "Berlin", year: 1986, title: "Take My Breath Away", style: "Pop", from: "Top Gun" },
-    { author: "Shrek Cast", year: 2001, title: "All Star", style: "Rock", from: "Shrek" },
-    { author: "Louis Prima", year: 1967, title: "I Wan'na Be Like You", style: "Soundtrack", from: "El libro de la selva" },
-    { author: "Dick Van Dyke", year: 1964, title: "Supercalifragilisticexpialidocious", style: "Soundtrack", from: "Mary Poppins" },
-    { author: "Hans Zimmer", year: 2014, title: "Cornfield Chase", style: "Film Score", from: "Interstellar" },
-    { author: "James Horner", year: 1995, title: "For the Love of a Princess", style: "Film Score", from: "Braveheart" },
-    { author: "Limahl", year: 1984, title: "The NeverEnding Story", style: "Pop", from: "La historia interminable" },
-    { author: "Robert Newton", year: 1950, title: "Fifteen Men", style: "Soundtrack", from: "La isla del tesoro" },
-    { author: "Alan Menken", year: 1989, title: "Under the Sea", style: "Soundtrack", from: "La sirenita" },
-    { author: "Alan Menken", year: 1991, title: "Beauty and the Beast", style: "Soundtrack", from: "La bella y la bestia" },
-    { author: "Brad Fiedel", year: 1984, title: "Main Title", style: "Film Score", from: "Terminator" },
-    { author: "Mel Leven", year: 1961, title: "Cruella De Vil", style: "Soundtrack", from: "101 dálmatas" },
-    { author: "Hans Zimmer & Lisa Gerrard", year: 2000, title: "Elysium", style: "Film Score", from: "Gladiator" },
-    { author: "John Travolta & Olivia Newton-John", year: 1978, title: "You're the One That I Want", style: "Soundtrack", from: "Grease" },
-    { author: "Danny Elfman", year: 1993, title: "This Is Halloween", style: "Soundtrack", from: "Pesadilla antes de Navidad" },
-    { author: "Bernard Herrmann", year: 1960, title: "Psycho Theme", style: "Film Score", from: "Psicosis" },
-    { author: "John Williams", year: 1975, title: "Theme from Jaws", style: "Film Score", from: "Tiburón" },
-    { author: "Huey Lewis & The News", year: 1985, title: "The Power of Love", style: "Pop Rock", from: "Regreso al futuro" },
-    { author: "John Williams", year: 1982, title: "Flying Theme", style: "Film Score", from: "E.T., el extraterrestre" },
-    { author: "Alan Silvestri", year: 1994, title: "Forrest Gump Suite", style: "Film Score", from: "Forrest Gump" },
-    { author: "Danny Elfman", year: 1989, title: "Batman Theme", style: "Film Score", from: "Batman" },
-    { author: "John Williams", year: 1978, title: "Superman March", style: "Film Score", from: "Superman" },
-    { author: "Don Davis", year: 1999, title: "Main Title", style: "Film Score", from: "Matrix" },
-    { author: "EJAE, Audrey Nuna & REI AMI", year: 2024, title: "Golden", style: "Soundtrack", from: "K-Pop: Demon Hunters" },
-    { author: "James Newton Howard", year: 2014, title: "The Hanging Tree", style: "Soundtrack", from: "Los juegos del hambre: Sinsajo – Parte 1" },
-    { author: "Billie Eilish", year: 2023, title: "What Was I Made For?", style: "Soundtrack", from: "Barbie" },
-    { author: "Lin-Manuel Miranda", year: 2016, title: "How Far I'll Go", style: "Soundtrack", from: "Vaiana" },
-    { author: "Ennio Morricone", year: 1965, title: "The Good, The Bad and The Ugly", style: "Film Score", from: "La muerte tenía un precio" },
-    { author: "Roy Orbison", year: 1990, title: "Oh, Pretty Woman", style: "Pop", from: "Pretty Woman" },
-    { author: "Judy Garland", year: 1939, title: "Over the Rainbow", style: "Soundtrack", from: "El mago de Oz" },
-    { author: "Dick Dale & His Del-Tones", year: 1962, title: "Misirlou", style: "Rock", from: "Pulp Fiction" }
+    { author: "Celine Dion", year: 1997, title: "My Heart Will Go On", from: "Titanic" },
+    { author: "Randy Newman", year: 1995, title: "You've Got a Friend in Me", from: "Toy Story" },
+    { author: "Elton John", year: 1994, title: "Can You Feel the Love Tonight", from: "El rey león" },
+    { author: "Survivor", year: 1982, title: "Eye of the Tiger", from: "Rocky III" },
+    { author: "Ray Parker Jr.", year: 1984, title: "Ghostbusters", from: "Los Cazafantasmas" },
+    { author: "Ramin Djawadi", year: 2011, title: "Main Title", from: "Juego de tronos" },
+    { author: "Howard Shore", year: 2001, title: "The Breaking of the Fellowship", from: "El señor de los anillos: La comunidad del anillo" },
+    { author: "John Williams", year: 2001, title: "Hedwig's Theme", from: "Harry Potter y la piedra profesional" },
+    { author: "Idina Menzel", year: 2013, title: "Let It Go", from: "Frozen: El reino del hielo" },
+    { author: "Phil Collins", year: 1999, title: "You'll Be in My Heart", from: "Tarzán" },
+    { author: "Phil Collins", year: 1999, title: "Son of Man", from: "Tarzán" },
+    { author: "Donny Osmond", year: 1998, title: "I'll Make a Man Out of You", from: "Mulán" },
+    { author: "Hercules Cast", year: 1997, title: "Go the Distance", from: "Hércules" },
+    { author: "Pocahontas Cast", year: 1995, title: "Colors of the Wind", from: "Pocahontas" },
+    { author: "A Whole New World Cast", year: 1992, title: "A Whole New World", from: "Aladdín" },
+    { author: "Elton John", year: 1994, title: "Hakuna Matata", from: "El rey león" },
+    { author: "John Williams", year: 1993, title: "Theme from Jurassic Park", from: "Parque Jurásico" },
+    { author: "Klaus Badelt", year: 2003, title: "He's a Pirate", from: "Piratas del Caribe: La maldición de la Perla Negra" },
+    { author: "John Williams", year: 1980, title: "The Imperial March", from: "Star Wars: Episodio V – El Imperio contraataca" },
+    { author: "John Williams", year: 1981, title: "Raiders March", from: "En busca del arca perdida (Indiana Jones)" },
+    { author: "Berlin", year: 1986, title: "Take My Breath Away", from: "Top Gun" },
+    { author: "Shrek Cast", year: 2001, title: "All Star", from: "Shrek" },
+    { author: "Louis Prima", year: 1967, title: "I Wan'na Be Like You", from: "El libro de la selva" },
+    { author: "Dick Van Dyke", year: 1964, title: "Supercalifragilisticexpialidocious", from: "Mary Poppins" },
+    { author: "Hans Zimmer", year: 2014, title: "Cornfield Chase", from: "Interstellar" },
+    { author: "James Horner", year: 1995, title: "For the Love of a Princess", from: "Braveheart" },
+    { author: "Limahl", year: 1984, title: "The NeverEnding Story", from: "La historia interminable" },
+    { author: "Robert Newton", year: 1950, title: "Fifteen Men", from: "La isla del tesoro" },
+    { author: "Alan Menken", year: 1989, title: "Under the Sea", from: "La sirenita" },
+    { author: "Alan Menken", year: 1991, title: "Beauty and the Beast", from: "La bella y la bestia" },
+    { author: "Brad Fiedel", year: 1984, title: "Main Title", from: "Terminator" },
+    { author: "Mel Leven", year: 1961, title: "Cruella De Vil", from: "101 dálmatas" },
+    { author: "Hans Zimmer & Lisa Gerrard", year: 2000, title: "Elysium", from: "Gladiator" },
+    { author: "John Travolta & Olivia Newton-John", year: 1978, title: "You're the One That I Want", from: "Grease" },
+    { author: "Danny Elfman", year: 1993, title: "This Is Halloween", from: "Pesadilla antes de Navidad" },
+    { author: "Bernard Herrmann", year: 1960, title: "Psycho Theme", from: "Psicosis" },
+    { author: "John Williams", year: 1975, title: "Theme from Jaws", from: "Tiburón" },
+    { author: "Huey Lewis & The News", year: 1985, title: "The Power of Love", from: "Regreso al futuro" },
+    { author: "John Williams", year: 1982, title: "Flying Theme", from: "E.T., el extraterrestre" },
+    { author: "Alan Silvestri", year: 1994, title: "Forrest Gump Suite", from: "Forrest Gump" },
+    { author: "Danny Elfman", year: 1989, title: "Batman Theme", from: "Batman" },
+    { author: "John Williams", year: 1978, title: "Superman March", from: "Superman" },
+    { author: "Don Davis", year: 1999, title: "Main Title", from: "Matrix" },
+    { author: "EJAE, Audrey Nuna & REI AMI", year: 2024, title: "Golden", from: "K-Pop: Demon Hunters" },
+    { author: "James Newton Howard", year: 2014, title: "The Hanging Tree", from: "Los juegos del hambre: Sinsajo – Parte 1" },
+    { author: "Billie Eilish", year: 2023, title: "What Was I Made For?", from: "Barbie" },
+    { author: "Lin-Manuel Miranda", year: 2016, title: "How Far I'll Go", from: "Vaiana" },
+    { author: "Ennio Morricone", year: 1965, title: "The Good, The Bad and The Ugly", from: "La muerte tenía un precio" },
+    { author: "Roy Orbison", year: 1990, title: "Oh, Pretty Woman", from: "Pretty Woman" },
+    { author: "Judy Garland", year: 1939, title: "Over the Rainbow", from: "El mago de Oz" },
+    { author: "Dick Dale & His Del-Tones", year: 1962, title: "Misirlou", from: "Pulp Fiction" }
   ];
 
   let zIndex = 100;
@@ -577,33 +684,21 @@
 
   function init() {
     shuffleArray(cardsData);
-    const styleFilter = document.getElementById("styleFilter");
-    const styles = [...new Set(cardsData.map(c => c.style))].sort();
-    styles.forEach(s => {
-      const opt = document.createElement("option");
-      opt.value = s; opt.textContent = s;
-      styleFilter.appendChild(opt);
-    });
 
     cardsData.forEach((data, i) => createCard(data, i));
     layoutDeck();
 
-    styleFilter.onchange = () => {
-      const val = styleFilter.value;
-      deck.querySelectorAll(".card").forEach(c => {
-        c.style.display = (val === "ALL" || c.dataset.style === val) ? "" : "none";
-      });
-      layoutDeck();
-    };
-
     // Inicializar colores de los equipos por defecto
     updateTeamColor('team1', '#38bdf8');
     updateTeamColor('team2', '#38bdf8');
+    
+    // Abrir ayuda al iniciar
+    openHelp();
   }
 
   function layoutDeck() {
     const zoom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zoom'));
-    const visible = [...deck.querySelectorAll(".card")].filter(c => c.style.display !== "none");
+    const visible = [...deck.querySelectorAll(".card")];
     visible.forEach((c, i) => {
       // Desplazamiento sutil que escala con el zoom
       const offset = i * (0.5 * zoom);
@@ -616,7 +711,7 @@
   function createCard(data, index) {
     const card = document.createElement("div");
     card.className = "card back";
-    card.dataset.style = data.style;
+    card.dataset.year = data.year; // Guardamos el año para validación
     card.innerHTML = `
     <div style="font-size: 0.8em; opacity: 0.6; font-weight: 700; letter-spacing: 1px;">TEMAZOS</div>
     <div class="actions">
@@ -716,9 +811,15 @@
     pFlip.onclick = () => {
       const flipBtn = card.querySelector(".flip");
       if (flipBtn) {
+        const wasBack = card.classList.contains("back");
         flipBtn.click();
         // Actualizar vista del popup
         openPopup(card, data);
+        
+        // Si acabamos de revelar la carta en el popup, validamos su posición en el tablero
+        if (wasBack && card.classList.contains("front")) {
+          validateCardPlacement(card);
+        }
       }
     };
 
@@ -728,6 +829,14 @@
   function closePopup() {
     document.getElementById("card-popup-overlay").classList.remove("active");
     stopSong();
+  }
+
+  function openHelp() {
+    document.getElementById("help-modal-overlay").classList.add("active");
+  }
+
+  function closeHelp() {
+    document.getElementById("help-modal-overlay").classList.remove("active");
   }
 
   function startPlayingAnimation() {
@@ -794,7 +903,83 @@
     card.querySelector(".stop").onclick = (e) => { e.stopPropagation(); stopSong(card); };
     card.querySelector(".flip").onclick = (e) => { e.stopPropagation(); hideCard(card, data); };
     
-    // El doble clic y touchstart siguen vinculados al elemento 'card'
+    // Validación automática si está en un equipo
+    validateCardPlacement(card);
+  }
+
+  function validateCardPlacement(card) {
+    const lane = card.parentElement;
+    if (!lane || !lane.classList.contains("lane")) return;
+
+    const cardsInLane = Array.from(lane.querySelectorAll(".card"));
+    if (cardsInLane.length <= 1) return; // Primera carta siempre es correcta
+
+    const currentIndex = cardsInLane.indexOf(card);
+    const currentYear = parseInt(card.dataset.year);
+    
+    let correct = true;
+
+    // Comprobar con la carta anterior
+    if (currentIndex > 0) {
+      const prevCard = cardsInLane[currentIndex - 1];
+      // Solo validamos contra cartas ya reveladas (opcional, pero hitster suele ser así)
+      // En este caso, el usuario pide validar "automáticamente usando el año"
+      const prevYear = parseInt(prevCard.dataset.year);
+      if (currentYear < prevYear) correct = false;
+    }
+
+    // Comprobar con la carta siguiente
+    if (currentIndex < cardsInLane.length - 1) {
+      const nextCard = cardsInLane[currentIndex + 1];
+      const nextYear = parseInt(nextCard.dataset.year);
+      if (currentYear > nextYear) correct = false;
+    }
+
+    showValidationFeedback(correct);
+
+    if (!correct) {
+      // Si falla, movemos la carta a descartes después de un breve retraso
+      // para que el usuario vea el feedback y la carta revelada un momento
+      setTimeout(() => {
+        moveToDiscard(card);
+      }, 800);
+    }
+  }
+
+  function moveToDiscard(card) {
+    const disc = document.getElementById("discard");
+    if (!disc) return;
+
+    // Asegurarse de que el popup se cierre si la carta estaba allí
+    // pero solo si la carta que se mueve es la misma que está en el popup o similar
+    // Para simplificar, si se activa un descarte automático, cerramos cualquier popup.
+    if (document.getElementById("card-popup-overlay").classList.contains("active")) {
+      closePopup();
+    }
+
+    disc.appendChild(card);
+    card.style.position = "absolute";
+    const discardedCards = disc.querySelectorAll(".card");
+    const count = discardedCards.length;
+    // Aplicamos el mismo desplazamiento que en la lógica de arrastre
+    card.style.left = (count * 1.5) + "px";
+    card.style.top = (count * 1.5) + "px";
+    card.style.zIndex = count;
+  }
+
+  function showValidationFeedback(isCorrect) {
+    const overlay = document.getElementById("feedback-overlay");
+    overlay.className = isCorrect ? "feedback-correct" : "feedback-incorrect";
+    
+    // Forzar reinicio de animación si ya estaba
+    overlay.style.animation = 'none';
+    overlay.offsetHeight; // trigger reflow
+    overlay.style.animation = null;
+
+    // Limpiar después de la animación
+    setTimeout(() => {
+      overlay.className = "";
+    }, 1000);
   }
 
   function hideCard(card, data) {
@@ -832,13 +1017,22 @@
       const json = await res.json();
       if(json.results[0]) {
         if(stopTimeout) clearTimeout(stopTimeout);
-        player.src = json.results[0].previewUrl;
+        
+        // Si ya hay un src y es el mismo, intentamos saltar a un punto aleatorio
+        if (player.src === json.results[0].previewUrl && !player.paused) {
+          // El preview de iTunes suele durar 30s. Saltamos a un punto aleatorio entre 0 y 10s
+          // para asegurar que queden al menos 20s de reproducción si es posible.
+          player.currentTime = Math.random() * 10;
+        } else {
+          player.src = json.results[0].previewUrl;
+        }
+        
         player.play();
         stopTimeout = setTimeout(() => {
           player.pause();
           if(btn) btn.style.background = "";
           stopPlayingAnimation();
-        }, 25000);
+        }, 20000);
       }
     } catch(e) { console.error("Error audio"); }
   }
@@ -970,11 +1164,7 @@
         el.style.position = "relative";
         el.style.left = "0"; el.style.top = "0";
       } else if (disc) {
-        disc.appendChild(el);
-        el.style.position = "absolute";
-        const count = disc.querySelectorAll(".card").length;
-        el.style.left = (count * 1.5) + "px";
-        el.style.top = (count * 1.5) + "px";
+        moveToDiscard(el);
       } else {
         deck.appendChild(el);
         layoutDeck();
