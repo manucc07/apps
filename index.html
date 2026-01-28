@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Hitster Casero – Edición Móvil</title>
+  <title>Temazos – Edición Móvil</title>
 
   <!-- PWA & iOS Support -->
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Hitster">
+  <meta name="apple-mobile-web-app-title" content="Temazos">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#141E30">
 
@@ -111,6 +111,7 @@
 
     .lane {
       display: flex;
+      justify-content: center;
       gap: calc(10px * var(--zoom));
       align-items: center;
       min-height: calc(105px * var(--zoom));
@@ -333,8 +334,7 @@
     card.className = "card back";
     card.dataset.style = data.style;
     card.innerHTML = `
-    <div style="font-size: 0.7em; opacity: 0.7;">Hitster</div>
-    <div style="margin-top: 10%; font-weight: bold; font-size: 0.9em;">PELÍCULA</div>
+    <div style="font-size: 0.7em; opacity: 0.7;">Temazos</div>
     <div class="actions">
       <button class="btn-card play">▶</button>
       <button class="btn-card stop">■</button>
@@ -364,6 +364,7 @@
   }
 
   function revealCard(card, data) {
+    player.pause();
     card.className = "card front";
     card.innerHTML = `
     <div style="font-size: 0.7em; opacity: 0.9;">${data.from || data.author}</div>
