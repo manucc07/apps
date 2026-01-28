@@ -1,6 +1,6 @@
 const CACHE_NAME = 'hitster-v1';
 const ASSETS = [
-  'Peliculas-movil.html',
+  'index.html',
   'manifest.json'
 ];
 
