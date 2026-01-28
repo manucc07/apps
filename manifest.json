@@ -2,7 +2,7 @@
   "name": "Hitster Casero",
   "short_name": "Hitster",
   "description": "Edición Móvil de Hitster Casero",
-  "start_url": "Peliculas-movil.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#141E30",
   "theme_color": "#141E30",
