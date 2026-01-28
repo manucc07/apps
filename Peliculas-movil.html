@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Hitster Casero – Edición Móvil</title>
+
+  <!-- PWA & iOS Support -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hitster">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="theme-color" content="#141E30">
+
+  <style>
+    :root {
+      --zoom: 1;
+      --card-w: calc(140px * var(--zoom));
+      --card-h: calc(95px * var(--zoom));
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #141E30, #243B55);
+      color: white;
+      overflow-x: hidden;
+      touch-action: pan-y;
+      min-height: 100vh;
+      /* Prevenir scroll elástico y padding para notch de iPhone */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      box-sizing: border-box;
+    }
+
+    #zoom-control {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      z-index: 9999;
+      background: rgba(0,0,0,0.8);
+      padding: 10px;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    #board {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      gap: calc(15px * var(--zoom));
+      width: 100%;
+    }
+
+    #orientation-msg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(20,30,48,0.98);
+      z-index: 10000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    @media (orientation: portrait) { #orientation-msg { display: flex; } }
+
+    .top-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    /* Mazo y Descarte con posición relativa para contener las cartas absolutas */
+    #deck, #discard {
+      width: var(--card-w);
+      height: var(--card-h);
+      position: relative;
+    }
+
+    #discard {
+      background: rgba(255,255,255,0.06);
+      border: 1px dashed rgba(255,255,255,0.2);
+      border-radius: calc(10px * var(--zoom));
+    }
+
+    #filterBox {
+      width: var(--card-w);
+      padding: 5px;
+      font-size: calc(10px * var(--zoom));
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+    }
+
+    .column {
+      width: 98%;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 8px;
+    }
+    .column h2 { margin: 0; font-size: calc(14px * var(--zoom)); text-align: center; }
+
+    .lane {
+      display: flex;
+      gap: calc(10px * var(--zoom));
+      align-items: center;
+      min-height: calc(105px * var(--zoom));
+      padding: 5px;
+      overflow-x: auto;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+    }
+
+    /* Cartas: Por defecto absolutas para el mazo */
+    .card {
+      position: absolute; /* Importante para el apilado */
+      width: var(--card-w);
+      height: var(--card-h);
+      border-radius: calc(10px * var(--zoom));
+      padding: calc(8px * var(--zoom));
+      box-sizing: border-box;
+      user-select: none;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+      left: 0;
+      top: 0;
+    }
+
+    /* Cuando están en una lane, pasan a ser relativas para el flexbox */
+    .lane .card {
+      position: relative !important;
+      flex: 0 0 auto;
+      left: auto !important;
+      top: auto !important;
+    }
+
+    .back { background: linear-gradient(135deg, #ff7e5f, #feb47b); }
+    .front { background: linear-gradient(135deg, #2193b0, #6dd5ed); text-align: center; }
+
+    .card-year { font-size: calc(22px * var(--zoom)); font-weight: bold; }
+    .card-title { font-size: calc(10px * var(--zoom)); font-weight: bold; height: 2.4em; overflow: hidden; }
+
+    .btn-card { padding: 4px; font-size: calc(9px * var(--zoom)); border-radius: 4px; border: none; background: rgba(0,0,0,0.4); color: white; }
+
+    .placeholder {
+      width: var(--card-w);
+      height: var(--card-h);
+      border: 1px dashed rgba(255,255,255,0.3);
+      border-radius: 10px;
+      flex: 0 0 auto;
+    }
+
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .hidden { display: none; }
+    .modal-content { width: 80%; max-width: 300px; padding: 15px; background: #1a2a40; border-radius: 15px; text-align: center; }
+    .wheel { width: 200px; height: 200px; border-radius: 50%; margin: 10px auto; border: 3px solid #fff; transition: transform 3s cubic-bezier(0.1, 0.7, 0.1, 1); }
+  </style>
+</head>
+
+<body>
+
+<div id="orientation-msg">
+  <div style="font-size: 40px;">🔄</div>
+  <h3>Gira el móvil</h3>
+  <p>Usa el zoom para ajustar el tablero.</p>
+</div>
+
+<div id="zoom-control">
+  <span style="font-size: 10px; font-weight: bold;">ZOOM</span>
+  <input type="range" id="zoomRange" min="0.5" max="1.5" step="0.1" value="1">
+</div>
+
+<div id="board">
+  <div class="top-controls">
+    <div id="deck"></div>
+    <div id="discard">
+      <div style="text-align:center; padding-top: 30%; opacity: 0.4; font-size: 10px;">Descartes</div>
+    </div>
+    <div id="filterBox">
+      <select id="styleFilter" style="width:100%; font-size:10px;">
+        <option value="ALL">Todos los estilos</option>
+      </select>
+      <button id="spinBtn" style="width:100%; margin-top:5px; font-size:10px;">🎡 Ruleta</button>
+    </div>
+  </div>
+
+  <div id="team1" class="column">
+    <h2>Equipo A</h2>
+    <div class="lane"></div>
+  </div>
+
+  <div id="team2" class="column">
+    <h2>Equipo B</h2>
+    <div class="lane"></div>
+  </div>
+
+  <div id="team3" class="column">
+    <h2>Equipo C</h2>
+    <div class="lane"></div>
+  </div>
+</div>
+
+<div id="wheelModal" class="modal hidden">
+  <div class="modal-content">
+    <h4 style="margin:0">Estilo Aleatorio</h4>
+    <div id="wheel" class="wheel"></div>
+    <div id="wheelResult" style="margin: 10px; font-weight: bold; color: #6dd5ed;">...</div>
+    <button id="wheelGo" style="padding:10px; width:60%">GIRAR</button>
+    <button id="wheelClose" style="padding:10px; width:30%">X</button>
+  </div>
+</div>
+
+<audio id="player"></audio>
+
+<script>
+  const cardsData = [
+    { author: "Celine Dion", year: 1997, title: "My Heart Will Go On", style: "Soundtrack", from: "Titanic" },
+    { author: "Randy Newman", year: 1995, title: "You've Got a Friend in Me", style: "Soundtrack", from: "Toy Story" },
+    { author: "Elton John", year: 1994, title: "Can You Feel the Love Tonight", style: "Soundtrack", from: "El rey león" },
+    { author: "Survivor", year: 1982, title: "Eye of the Tiger", style: "Rock", from: "Rocky III" },
+    { author: "Ray Parker Jr.", year: 1984, title: "Ghostbusters", style: "Pop", from: "Los Cazafantasmas" },
+    { author: "Ramin Djawadi", year: 2011, title: "Main Title", style: "TV Soundtrack", from: "Juego de tronos" },
+    { author: "Howard Shore", year: 2001, title: "The Breaking of the Fellowship", style: "Film Score", from: "El señor de los anillos: La comunidad del anillo" },
+    { author: "John Williams", year: 2001, title: "Hedwig's Theme", style: "Soundtrack", from: "Harry Potter y la piedra profesional" },
+    { author: "Idina Menzel", year: 2013, title: "Let It Go", style: "Soundtrack", from: "Frozen: El reino del hielo" },
+    { author: "Phil Collins", year: 1999, title: "You'll Be in My Heart", style: "Soundtrack", from: "Tarzán" },
+    { author: "Phil Collins", year: 1999, title: "Son of Man", style: "Soundtrack", from: "Tarzán" },
+    { author: "Donny Osmond", year: 1998, title: "I'll Make a Man Out of You", style: "Soundtrack", from: "Mulán" },
+    { author: "Hercules Cast", year: 1997, title: "Go the Distance", style: "Soundtrack", from: "Hércules" },
+    { author: "Pocahontas Cast", year: 1995, title: "Colors of the Wind", style: "Soundtrack", from: "Pocahontas" },
+    { author: "A Whole New World Cast", year: 1992, title: "A Whole New World", style: "Soundtrack", from: "Aladdín" },
+    { author: "Elton John", year: 1994, title: "Hakuna Matata", style: "Soundtrack", from: "El rey león" },
+    { author: "John Williams", year: 1993, title: "Theme from Jurassic Park", style: "Soundtrack", from: "Parque Jurásico" },
+    { author: "Klaus Badelt", year: 2003, title: "He's a Pirate", style: "Soundtrack", from: "Piratas del Caribe: La maldición de la Perla Negra" },
+    { author: "John Williams", year: 1980, title: "The Imperial March", style: "Soundtrack", from: "Star Wars: Episodio V – El Imperio contraataca" },
+    { author: "John Williams", year: 1981, title: "Raiders March", style: "Soundtrack", from: "En busca del arca perdida (Indiana Jones)" },
+    { author: "Berlin", year: 1986, title: "Take My Breath Away", style: "Pop", from: "Top Gun" },
+    { author: "Shrek Cast", year: 2001, title: "All Star", style: "Rock", from: "Shrek" },
+    { author: "Louis Prima", year: 1967, title: "I Wan'na Be Like You", style: "Soundtrack", from: "El libro de la selva" },
+    { author: "Dick Van Dyke", year: 1964, title: "Supercalifragilisticexpialidocious", style: "Soundtrack", from: "Mary Poppins" },
+    { author: "Hans Zimmer", year: 2014, title: "Cornfield Chase", style: "Film Score", from: "Interstellar" },
+    { author: "James Horner", year: 1995, title: "For the Love of a Princess", style: "Film Score", from: "Braveheart" },
+    { author: "Limahl", year: 1984, title: "The NeverEnding Story", style: "Pop", from: "La historia interminable" },
+    { author: "Robert Newton", year: 1950, title: "Fifteen Men", style: "Soundtrack", from: "La isla del tesoro" },
+    { author: "Alan Menken", year: 1989, title: "Under the Sea", style: "Soundtrack", from: "La sirenita" },
+    { author: "Alan Menken", year: 1991, title: "Beauty and the Beast", style: "Soundtrack", from: "La bella y la bestia" },
+    { author: "Brad Fiedel", year: 1984, title: "Main Title", style: "Film Score", from: "Terminator" },
+    { author: "Mel Leven", year: 1961, title: "Cruella De Vil", style: "Soundtrack", from: "101 dálmatas" },
+    { author: "Hans Zimmer & Lisa Gerrard", year: 2000, title: "Elysium", style: "Film Score", from: "Gladiator" },
+    { author: "John Travolta & Olivia Newton-John", year: 1978, title: "You're the One That I Want", style: "Soundtrack", from: "Grease" },
+    { author: "Danny Elfman", year: 1993, title: "This Is Halloween", style: "Soundtrack", from: "Pesadilla antes de Navidad" },
+    { author: "Bernard Herrmann", year: 1960, title: "Psycho Theme", style: "Film Score", from: "Psicosis" },
+    { author: "John Williams", year: 1975, title: "Theme from Jaws", style: "Film Score", from: "Tiburón" },
+    { author: "Huey Lewis & The News", year: 1985, title: "The Power of Love", style: "Pop Rock", from: "Regreso al futuro" },
+    { author: "John Williams", year: 1982, title: "Flying Theme", style: "Film Score", from: "E.T., el extraterrestre" },
+    { author: "Alan Silvestri", year: 1994, title: "Forrest Gump Suite", style: "Film Score", from: "Forrest Gump" },
+    { author: "Danny Elfman", year: 1989, title: "Batman Theme", style: "Film Score", from: "Batman" },
+    { author: "John Williams", year: 1978, title: "Superman March", style: "Film Score", from: "Superman" },
+    { author: "Don Davis", year: 1999, title: "Main Title", style: "Film Score", from: "Matrix" },
+    { author: "EJAE, Audrey Nuna & REI AMI", year: 2024, title: "Golden", style: "Soundtrack", from: "K-Pop: Demon Hunters" },
+    { author: "James Newton Howard", year: 2014, title: "The Hanging Tree", style: "Soundtrack", from: "Los juegos del hambre: Sinsajo – Parte 1" },
+    { author: "Billie Eilish", year: 2023, title: "What Was I Made For?", style: "Soundtrack", from: "Barbie" },
+    { author: "Lin-Manuel Miranda", year: 2016, title: "How Far I'll Go", style: "Soundtrack", from: "Vaiana" },
+    { author: "Ennio Morricone", year: 1965, title: "The Good, The Bad and The Ugly", style: "Film Score", from: "La muerte tenía un precio" },
+    { author: "Roy Orbison", year: 1990, title: "Oh, Pretty Woman", style: "Pop", from: "Pretty Woman" },
+    { author: "Judy Garland", year: 1939, title: "Over the Rainbow", style: "Soundtrack", from: "El mago de Oz" },
+    { author: "Dick Dale & His Del-Tones", year: 1962, title: "Misirlou", style: "Rock", from: "Pulp Fiction" }
+  ];
+
+  let zIndex = 100;
+  let stopTimeout = null;
+  const player = document.getElementById("player");
+  const deck = document.getElementById("deck");
+  const discard = document.getElementById("discard");
+  const zoomRange = document.getElementById("zoomRange");
+
+  zoomRange.oninput = (e) => {
+    document.documentElement.style.setProperty('--zoom', e.target.value);
+    layoutDeck(); // Recalcular mazo al cambiar zoom
+  };
+
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
+  function init() {
+    shuffleArray(cardsData);
+    const styleFilter = document.getElementById("styleFilter");
+    const styles = [...new Set(cardsData.map(c => c.style))].sort();
+    styles.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s; opt.textContent = s;
+      styleFilter.appendChild(opt);
+    });
+
+    cardsData.forEach((data, i) => createCard(data, i));
+    layoutDeck();
+
+    styleFilter.onchange = () => {
+      const val = styleFilter.value;
+      deck.querySelectorAll(".card").forEach(c => {
+        c.style.display = (val === "ALL" || c.dataset.style === val) ? "" : "none";
+      });
+      layoutDeck();
+    };
+  }
+
+  function layoutDeck() {
+    const zoom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zoom'));
+    const visible = [...deck.querySelectorAll(".card")].filter(c => c.style.display !== "none");
+    visible.forEach((c, i) => {
+      // Desplazamiento sutil que escala con el zoom
+      const offset = i * (0.5 * zoom);
+      c.style.top = offset + "px";
+      c.style.left = offset + "px";
+      c.style.zIndex = i;
+    });
+  }
+
+  function createCard(data, index) {
+    const card = document.createElement("div");
+    card.className = "card back";
+    card.dataset.style = data.style;
+    card.innerHTML = `
+    <div style="font-size: 0.7em; opacity: 0.7;">Hitster</div>
+    <div style="margin-top: 10%; font-weight: bold; font-size: 0.9em;">PELÍCULA</div>
+    <div class="actions">
+      <button class="btn-card play">▶</button>
+      <button class="btn-card stop">■</button>
+      <button class="btn-card flip">🔄</button>
+    </div>
+  `;
+
+    card.querySelector(".play").onclick = async (e) => {
+      e.stopPropagation();
+      try {
+        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(data.author + " " + data.title)}&entity=song&limit=1`);
+        const json = await res.json();
+        if(json.results[0]) {
+          if(stopTimeout) clearTimeout(stopTimeout);
+          player.src = json.results[0].previewUrl;
+          player.play();
+          stopTimeout = setTimeout(() => player.pause(), 25000);
+        }
+      } catch(e) { console.error("Error audio"); }
+    };
+
+    card.querySelector(".stop").onclick = (e) => { e.stopPropagation(); player.pause(); };
+    card.querySelector(".flip").onclick = (e) => { e.stopPropagation(); revealCard(card, data); };
+
+    makeDraggable(card);
+    deck.appendChild(card);
+  }
+
+  function revealCard(card, data) {
+    card.className = "card front";
+    card.innerHTML = `
+    <div style="font-size: 0.7em; opacity: 0.9;">${data.from || data.author}</div>
+    <div class="card-year">${data.year}</div>
+    <div class="card-title">${data.title}</div>
+  `;
+  }
+
+  function makeDraggable(el) {
+    let startX, startY;
+    let dragging = false;
+    const placeholder = document.createElement("div");
+    placeholder.className = "placeholder";
+
+    function onStart(e) {
+      if (e.target.tagName === "BUTTON") return;
+      dragging = true;
+      const pos = e.touches ? e.touches[0] : e;
+      const rect = el.getBoundingClientRect();
+
+      startX = pos.clientX - rect.left;
+      startY = pos.clientY - rect.top;
+
+      el.style.zIndex = ++zIndex;
+      if(el.parentElement.classList.contains("lane")) el.parentElement.insertBefore(placeholder, el);
+
+      document.body.appendChild(el);
+      onMove(e);
+    }
+
+    function onMove(e) {
+      if (!dragging) return;
+      e.preventDefault();
+      const pos = e.touches ? e.touches[0] : e;
+
+      el.style.position = "fixed";
+      el.style.left = (pos.clientX - startX) + "px";
+      el.style.top = (pos.clientY - startY) + "px";
+
+      const lane = getElementUnder(pos.clientX, pos.clientY, ".lane");
+      if(lane) {
+        lane.appendChild(placeholder);
+        const afterElement = Array.from(lane.querySelectorAll(".card:not(.dragging)")).find(c => {
+          return pos.clientX < c.getBoundingClientRect().left + c.offsetWidth/2;
+        });
+        if(afterElement) lane.insertBefore(placeholder, afterElement);
+      } else {
+        placeholder.remove();
+      }
+    }
+
+    function onEnd(e) {
+      if (!dragging) return;
+      dragging = false;
+      const pos = e.changedTouches ? e.changedTouches[0] : e;
+      const lane = getElementUnder(pos.clientX, pos.clientY, ".lane");
+      const disc = getElementUnder(pos.clientX, pos.clientY, "#discard");
+
+      if(lane) {
+        lane.insertBefore(el, placeholder);
+        el.style.position = "relative";
+        el.style.left = "0"; el.style.top = "0";
+      } else if (disc) {
+        disc.appendChild(el);
+        el.style.position = "absolute";
+        const count = disc.querySelectorAll(".card").length;
+        el.style.left = (count * 1.5) + "px";
+        el.style.top = (count * 1.5) + "px";
+      } else {
+        deck.appendChild(el);
+        layoutDeck();
+      }
+      placeholder.remove();
+    }
+
+    function getElementUnder(x, y, selector) {
+      const elements = document.elementsFromPoint(x, y);
+      return elements.find(el => el.matches(selector));
+    }
+
+    el.addEventListener("mousedown", onStart);
+    el.addEventListener("touchstart", onStart, {passive: false});
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("touchmove", onMove, {passive: false});
+    document.addEventListener("mouseup", onEnd);
+    document.addEventListener("touchend", onEnd);
+  }
+
+  // Ruleta
+  const wheelGo = document.getElementById("wheelGo");
+  const wheel = document.getElementById("wheel");
+  let rotation = 0;
+
+  wheelGo.onclick = () => {
+    const styles = [...new Set([...deck.querySelectorAll(".card")].filter(c => c.style.display !== "none").map(c => c.dataset.style))];
+    if(styles.length === 0) return;
+    const winnerIdx = Math.floor(Math.random() * styles.length);
+    rotation += 1440 + (360 / styles.length * winnerIdx);
+    wheel.style.transform = `rotate(${rotation}deg)`;
+    setTimeout(() => {
+      document.getElementById("wheelResult").textContent = "🎯 " + styles[winnerIdx];
+    }, 3100);
+  };
+
+  document.getElementById("spinBtn").onclick = () => {
+    document.getElementById("wheelModal").classList.remove("hidden");
+    const styles = [...new Set([...deck.querySelectorAll(".card")].filter(c => c.style.display !== "none").map(c => c.dataset.style))];
+    const gradient = styles.map((_,i) => `hsl(${(360/styles.length)*i}, 65%, 45%) ${(360/styles.length)*i}deg ${(360/styles.length)*(i+1)}deg`).join(",");
+    wheel.style.background = `conic-gradient(${gradient})`;
+  };
+
+  document.getElementById("wheelClose").onclick = () => document.getElementById("wheelModal").classList.add("hidden");
+
+  init();
+
+  // Registro del Service Worker para PWA
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker registrado', reg))
+        .catch(err => console.error('Error al registrar Service Worker', err));
+    });
+  }
+</script>
+</body>
+</html>

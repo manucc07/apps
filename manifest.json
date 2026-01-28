@@ -1,0 +1,22 @@
+{
+  "name": "Hitster Casero",
+  "short_name": "Hitster",
+  "description": "Edición Móvil de Hitster Casero",
+  "start_url": "Peliculas-movil.html",
+  "display": "standalone",
+  "background_color": "#141E30",
+  "theme_color": "#141E30",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
