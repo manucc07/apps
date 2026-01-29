@@ -1,6 +1,8 @@
 const CACHE_NAME = 'hitster-v1';
 const ASSETS = [
   'index.html',
+  'cronomusic.html',
+  'who_is.html',
   'manifest.json'
 ];
 

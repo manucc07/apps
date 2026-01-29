@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/quien_soy",
+      "destination": "/who_is.html"
+    },
+    {
+      "source": "/cronomusic",
+      "destination": "/cronomusic.html"
+    }
+  ]
+}

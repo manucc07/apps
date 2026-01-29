@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>¿Quién soy? - Cronomusic</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
+  <meta name="theme-color" content="#141E30">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cronomusic">
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --accent: #38bdf8;
+      --surface: rgba(255, 255, 255, 0.05);
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --card-back: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      --card-front: linear-gradient(135deg, #0ea5e9 0%, #22d3ee 100%);
+      --zoom: 1;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0, transparent 50%), 
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0, transparent 50%);
+      background-attachment: fixed;
+      color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom) 20px;
+      box-sizing: border-box;
+    }
+
+    #zoom-control-header {
+      background: var(--surface);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid var(--surface-border);
+      user-select: none;
+    }
+
+    #zoom-control-header span {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      margin-bottom: 2px;
+      opacity: 0.8;
+      text-transform: uppercase;
+    }
+
+    #zoom-control-header input {
+      width: 70px;
+      cursor: pointer;
+      height: 12px;
+    }
+
+    @media (max-width: 480px) {
+      #zoom-control-header {
+        padding: 4px 8px;
+        border-radius: 8px;
+      }
+      #zoom-control-header span {
+        font-size: 7px;
+      }
+      #zoom-control-header input {
+        width: 50px;
+        height: 10px;
+      }
+    }
+
+    .import-btn-header {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--accent);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      padding: 0;
+    }
+
+    .import-btn-header:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    #import-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(15px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 30000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+
+    #import-modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    #import-modal {
+      background: var(--bg-gradient);
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 30px;
+      border-radius: 24px;
+      border: 1px solid var(--surface-border);
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    #import-modal-overlay.active #import-modal {
+      transform: scale(1);
+    }
+
+    #import-modal h2 {
+      color: var(--accent);
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .warning-box {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    #import-textarea {
+      width: 100%;
+      height: 200px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      color: #f1f5f9;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 12px;
+      resize: vertical;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+    }
+
+    .import-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .header {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    .back-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0 5px;
+      background: linear-gradient(to right, #38bdf8, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.05em;
+      text-align: center;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(20px * var(--zoom));
+      transform: scale(var(--zoom));
+      transform-origin: top center;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: calc(500px * var(--zoom));
+      height: auto;
+      aspect-ratio: 1 / 1;
+      border-radius: calc(24px * var(--zoom));
+      border: 1px solid var(--surface-border);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+      background: #000;
+    }
+
+    .info-panel {
+      width: 100%;
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--surface-border);
+      border-radius: calc(24px * var(--zoom));
+      padding: calc(15px * var(--zoom)) calc(20px * var(--zoom));
+      box-sizing: border-box;
+      text-align: center;
+      min-height: calc(80px * var(--zoom));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    #type {
+      font-size: calc(0.6rem * var(--zoom));
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.4;
+      margin-top: calc(-10px * var(--zoom));
+      margin-bottom: calc(5px * var(--zoom));
+    }
+
+    .speed-control {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(5px * var(--zoom));
+      margin-top: calc(5px * var(--zoom));
+    }
+
+    .speed-control span {
+      font-size: calc(0.7rem * var(--zoom));
+      opacity: 0.5;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .speed-control input {
+      width: calc(150px * var(--zoom));
+      accent-color: var(--accent);
+    }
+
+    #hint, #name {
+      font-size: calc(1.2rem * var(--zoom));
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    #name {
+      color: var(--accent);
+      margin-top: calc(10px * var(--zoom));
+    }
+
+    .button-group {
+      display: flex;
+      gap: calc(10px * var(--zoom));
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    button {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: white;
+      padding: calc(12px * var(--zoom)) calc(20px * var(--zoom));
+      border-radius: calc(16px * var(--zoom));
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: calc(8px * var(--zoom));
+      backdrop-filter: blur(8px);
+      font-size: calc(1rem * var(--zoom));
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(calc(-2px * var(--zoom)));
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    button.primary {
+      background: var(--card-back);
+      border: none;
+    }
+
+    .filters {
+      margin-top: calc(10px * var(--zoom));
+      display: flex;
+      gap: calc(8px * var(--zoom));
+    }
+
+    .filters button {
+      padding: calc(8px * var(--zoom)) calc(12px * var(--zoom));
+      font-size: calc(0.8rem * var(--zoom));
+      opacity: 0.7;
+    }
+
+    .filters button.active {
+      opacity: 1;
+      background: var(--surface-border);
+    }
+
+
+    /* Estilos para el overlay de pausa */
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      max-width: calc(500px * var(--zoom));
+      aspect-ratio: 1 / 1;
+    }
+
+    #pause-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-radius: calc(24px * var(--zoom));
+      pointer-events: none;
+      z-index: 10;
+      animation: fadeIn 0.2s ease;
+    }
+
+    #pause-overlay svg {
+      width: calc(80px * var(--zoom));
+      height: calc(80px * var(--zoom));
+      fill: white;
+      filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+    }
+
+    /* Botones de navegación laterales */
+    .nav-side-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: calc(50px * var(--zoom));
+      height: calc(50px * var(--zoom));
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--surface-border);
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      transition: all 0.2s;
+      padding: 0;
+      font-size: calc(1.5rem * var(--zoom));
+    }
+
+    .nav-side-btn:hover {
+      background: rgba(15, 23, 42, 0.8);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .nav-side-btn:active {
+      transform: translateY(-50%) scale(0.9);
+    }
+
+    .nav-side-btn.left {
+      left: calc(-25px * var(--zoom));
+    }
+
+    .nav-side-btn.right {
+      right: calc(-25px * var(--zoom));
+    }
+
+    @media (max-width: 600px) {
+      .nav-side-btn.left {
+        left: calc(10px * var(--zoom));
+      }
+      .nav-side-btn.right {
+        right: calc(10px * var(--zoom));
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(1.1); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        padding: 10px 0;
+      }
+      h1 { font-size: 1.2rem; }
+      .back-btn, .import-btn-header {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        border-radius: 10px;
+      }
+      .import-btn-header {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+      #hint, #name { font-size: 1.1rem; }
+      .speed-control input { width: 120px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <a href="/" class="back-btn">← Inicio</a>
+    <h1>¿Quién soy?</h1>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <div id="zoom-control-header">
+        <span>ZOOM</span>
+        <input type="range" id="zoomRange" min="0.5" max="1.5" step="0.1" value="1">
+      </div>
+      <button id="import-btn-header" class="import-btn-header" onclick="openImport()" title="Importar imágenes">📥</button>
+    </div>
+  </div>
+
+  <div class="game-container">
+    <div class="canvas-container">
+      <button id="prev-side" class="nav-side-btn left">⬅</button>
+      <canvas id="canvas" width="600" height="600"></canvas>
+      <div id="pause-overlay">
+        <svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </div>
+      <button id="next-side" class="nav-side-btn right">➡</button>
+    </div>
+    
+    <div class="info-panel">
+      <div id="hint"></div>
+      <div id="name"></div>
+    </div>
+    <div id="type"></div>
+
+    <div class="speed-control">
+      <span>Velocidad de despixelado</span>
+      <input type="range" id="speedRange" min="1" max="10" step="1" value="5">
+    </div>
+
+    <div class="button-group">
+      <button id="toggleHint">💡 Pista: OFF</button>
+      <button id="toggleName" class="primary">✅ Revelar</button>
+    </div>
+
+    <div class="filters">
+      <button onclick="filterByType('all', this)" class="active">🌍 Todos</button>
+      <button onclick="filterByType('actor', this)">🎭 Actores</button>
+      <button onclick="filterByType('personaje', this)">🧙 Personajes</button>
+    </div>
+
+  </div>
+
+
+
+  <div id="import-modal-overlay" onclick="closeImport()">
+    <div id="import-modal" onclick="event.stopPropagation()">
+      <h2>Importar Lista de Imágenes</h2>
+      <div class="warning-box">
+        ⚠️ <strong>Atención:</strong> Pega tu lista de imágenes en formato JSON. Cada objeto debe tener <em>name, src, type</em> (actor o personaje) y <em>hint</em>.
+      </div>
+      <p style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">Formato JSON esperado:</p>
+      <textarea id="import-textarea" placeholder='[
+  {
+    "name": "Nombre del Personaje",
+    "src": "https://url-de-la-imagen.jpg",
+    "type": "actor",
+    "hint": "Una pista sobre quién es."
+  }
+]'></textarea>
+      
+      <div style="text-align: center; margin-bottom: 15px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+         <button class="primary" style="font-size: 11px; padding: 8px 12px;" onclick="loadDefaultImages()">Versión Original</button>
+         <button style="background: rgba(255,255,255,0.1); color: #fff; font-size: 11px; padding: 8px 12px;" onclick="document.getElementById('import-textarea').value = '[\n  {\n    &quot;name&quot;: &quot;Leonardo DiCaprio&quot;,\n    &quot;src&quot;: &quot;https://cdn.britannica.com/65/227665-050-D74A477E/American-actor-Leonardo-DiCaprio-2016.jpg&quot;,\n    &quot;type&quot;: &quot;actor&quot;,\n    &quot;hint&quot;: &quot;Ganó su primer Oscar por interpretar a un hombre en plena supervivencia contra la naturaleza.&quot;\n  }\n]'">Cargar ejemplo</button>
+      </div>
+      
+      <div class="import-actions">
+        <button class="primary" onclick="processTextImport()">Cargar Texto</button>
+        <div class="file-input-wrapper">
+          <button style="background: var(--surface); color: var(--accent); border: 1px solid var(--surface-border);">Subir .txt</button>
+          <input type="file" id="import-file" accept=".txt,.json" onchange="processFileImport(this)">
+        </div>
+        <button onclick="closeImport()" style="background: transparent; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+// ====================
+// LISTA DE IMÁGENES
+// ====================
+const ORIGINAL_IMAGES = [
+  {
+    name: "Leonardo DiCaprio",
+    src: "https://cdn.britannica.com/65/227665-050-D74A477E/American-actor-Leonardo-DiCaprio-2016.jpg",
+    type: "actor",
+    hint: "Ganó su primer Oscar por interpretar a un hombre en plena supervivencia contra la naturaleza."
+  },
+  {
+    name: "Scarlett Johansson",
+    src: "https://image.tmdb.org/t/p/original/3JTEc2tGUact9c0WktvpeJ9pajn.jpg",
+    type: "actor",
+    hint: "Interpretó a una asesina en el Universo Cinematográfico de Marvel."
+  },
+  {
+    name: "Tom Hanks",
+    src: "https://hips.hearstapps.com/hmg-prod/images/gettyimages-1257937597.jpg",
+    type: "actor",
+    hint: "Es conocido como 'Papá de América' y protagonizó una película ambientada en un banco de témperas."
+  },
+  {
+    name: "Natalie Portman",
+    src: "https://media.gettyimages.com/id/3231090/photo/natalie-portman.jpg?s=1024x1024&w=gi&k=20&c=X1c968OLbXZnqfI7NbS_MB8hFGBqAu3R-L7Z13d-JxI=",
+    type: "actor",
+    hint: "Ganó un Oscar por interpretar a una bailarina en un thriller psicológico."
+  },
+  {
+    name: "Denzel Washington",
+    src: "https://cdn.britannica.com/89/90089-050-114ACA54/Denzel-Washington-Academy-Award-actor-2002.jpg",
+    type: "actor",
+    hint: "Fue el primer actor afroamericano en ganar dos Oscars competitivos por papeles muy distintos."
+  },
+  {
+    name: "Vin Diesel",
+    src: "https://m.media-amazon.com/images/M/MV5BMjExNzA4MDYxN15BMl5BanBnXkFtZTcwOTI1MDAxOQ@@._V1_.jpg",
+    type: "actor",
+    hint: "Interpretó a Dominic Toretto, un mecánico apasionado por los autos y la familia."
+  },
+  {
+    name: "Johnny Depp",
+    src: "https://wallpaperaccess.com/full/2420069.jpg",
+    type: "actor",
+    hint: "Famoso por encarnar a personajes excéntricos como un capitán pirata astuto."
+  },
+  {
+    name: "Sydney Sweeney",
+    src: "https://a57.foxnews.com/static.foxnews.com/foxnews.com/content/uploads/2025/09/1200/675/sydney-sweeney-carpet.jpg?ve=1&tl=1",
+    type: "actor",
+    hint: "Protagonista de series intensas en HBO y creadora de personajes complejos."
+  },
+  {
+    name: "Chris Hemsworth",
+    src: "https://ilarge.lisimg.com/image/26083235/740full-chris-hemsworth.jpg",
+    type: "actor",
+    hint: "Un dios nórdico musculoso que maneja un martillo místico y pelea por la justicia."
+  },
+  {
+    name: "Zendaya",
+    src: "https://goldenglobes.com/wp-content/uploads/2023/10/Zendaya-GettyImages-1401833833.jpg",
+    type: "actor",
+    hint: "Fue adolescente con poderes y luego reina en un planeta desértico avanzado."
+  },
+  {
+  name: "Anne Hathaway",
+  src: "https://media.vogue.co.uk/photos/68f75517bcca360d5a2aa0c0/2:3/w_1280,c_limit/GettyImages-2241916928.jpg",
+  type: "actor",
+  hint: "Ganó un Oscar por interpretar a una mujer caída en desgracia en un musical famoso."
+},
+{
+  name: "Keanu Reeves",
+  src: "https://variety.com/wp-content/uploads/2025/10/P102KIRG.jpg?w=1000&h=667&crop=1&resize=681%2C454",
+  type: "actor",
+  hint: "Conocido por ser un elegido digital y también un letal asesino con traje impecable."
+},
+{
+  name: "Jennifer Lawrence",
+  src: "https://goldenglobes.com/wp-content/uploads/2023/10/Jennifer-Lawrence-Photo.png?w=600?w=600",
+  type: "actor",
+  hint: "Saltó a la fama interpretando a una arquera rebelde en una distopía juvenil."
+},
+{
+  name: "Samuel L. Jackson",
+  src: "https://ca-times.brightspotcdn.com/dims4/default/2d5ef49/2147483647/strip/true/crop/2048x1152+0+0/resize/1200x675!/format/webp/quality/75/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.amazonaws.com%2Fc2%2Ff9%2F7635229409d65f508c014a3a8be6%2Fla-1487361005-kzxrybfvn0-snap-photo",
+  type: "actor",
+  hint: "Famoso por su parche en el ojo y por reclutar héroes para una iniciativa muy especial."
+},
+{
+  name: "Ryan Reynolds",
+  src: "https://media.themoviedb.org/t/p/w300_and_h450_face/trzgptffGvAlAT6MEu01fz47cLW.jpg",
+  type: "actor",
+  hint: "Interpreta a un antihéroe bocazas con traje rojo y humor muy autorreferencial."
+},
+{ 
+	name: "Margot Robbie", 
+	src: "https://hips.hearstapps.com/hmg-prod/images/margot-robbie-attends-the-new-york-premiere-of-asteroid-news-photo-1689698979.jpg?crop=0.733xw:0.489xh;0.107xw,0.0363xh&resize=1400:*", 
+	type: "actor", 
+	hint: "Interpretó a una patinadora polémica, a una villana colorida y a una muñeca icónica." 
+}, 
+{ 
+	name: "Hugh Jackman", 
+	src: "https://static.wikia.nocookie.net/xmen9260/images/3/31/Hugh_Jackman.jpg/revision/latest/scale-to-width-down/1000?cb=20170227203035&path-prefix=es", 
+	type: "actor", 
+	hint: "Famoso por sus garras de adamantium y por cantar en musicales épicos."
+}, 
+{
+  name: "Pedro Pascal",
+  src: "https://www.planetegrandesecoles.com/wp-content/uploads/2025/07/F1-21.png",
+  type: "actor",
+  hint: "Protege a una niña especial en un mundo devastado y también a un pequeño ser verde."
+},
+{
+  name: "Timothée Chalamet",
+  src: "https://imgix.bustle.com/uploads/getty/2023/12/11/3eb82992-81b6-4ee4-b693-8d6204f5065d-getty-1846406544.jpg?w=900&h=1352&fit=crop&crop=focalpoint&fp-x=0.4432&fp-y=0.1781",
+  type: "actor",
+  hint: "Protagonista de una saga épica en un planeta desértico donde el destino pesa más que la arena."
+},
+{
+  name: "Jackie Chan",
+  src: "https://hips.hearstapps.com/hmg-prod/images/jackie-chan-poses-before-his-in-conversation-at-the-red-sea-news-photo-1746544877.pjpeg?crop=1xw:0.6666xh;center,top&resize=1400:*",
+  type: "actor",
+  hint: "Maestro de artes marciales famoso por sus acrobacias imposibles y humor físico."
+},
+{
+  name: "Will Smith",
+  src: "https://goldenglobes.com/wp-content/uploads/2023/10/will-smith-c-hfpa-2016.jpg?w=600?w=600",
+  type: "actor",
+  hint: "Saltó a la fama como príncipe en Bel-Air y luego salvó al mundo de alienígenas varias veces."
+},
+{
+  name: "Bruce Willis",
+  src: "https://media.cnn.com/api/v1/images/stellar/prod/220330131408-bruce-willis-2019-file.jpg?c=16x9&q=h_653,w_1160,c_fill/f_avif",
+  type: "actor",
+  hint: "Un policía duro de Nueva York que siempre acaba atrapado en situaciones explosivas."
+},
+{
+  name: "Arnold Schwarzenegger",
+  src: "https://www.nga.org/wp-content/uploads/2018/09/A._Schwarzenegger.jpg",
+  type: "actor",
+  hint: "Un cyborg del futuro que viaja en el tiempo para cambiar el destino de la humanidad."
+},
+{
+  name: "John Travolta",
+  src: "https://media.newyorker.com/photos/59096d8e1c7a8e33fb38e55c/master/w_1280,c_limit/Clegg-John-Travolta-Has-Yet-to-Be-Recognized-at-This-Pizzeria.jpg",
+  type: "actor",
+  hint: "Bailó con traje blanco en los 70 y volvió a brillar en un clásico del cine de los 90."
+},
+{
+  name: "Keira Knightley",
+  src: "https://hips.hearstapps.com/hmg-prod/images/actress-keira-knightley-is-seen-outside-abc-studios-on-news-photo-1695341431.jpg?crop=0.734xw:0.905xh;0.124xw,0.0794xh&resize=1400:*",
+  type: "actor",
+  hint: "Navegó entre piratas, maldiciones y tesoros en una saga de aventuras muy famosa."
+},
+{
+  name: "Antonio Resines",
+  src: "https://loslibrosalasfabricas.es/wp-content/uploads/2020/10/resines-antonio-paco-navarro-683x1024.jpg",
+  type: "actor",
+  hint: "Rostro icónico del cine y la televisión española, conocido por su humor y cercanía."
+},
+{
+  name: "Ana de Armas",
+  src: "https://www.sheknows.com/wp-content/uploads/2025/03/ana-de-armas.png?resize=1024,768",
+  type: "actor",
+  hint: "Actriz cubana que triunfó en Hollywood con papeles en thrillers y biopics."
+},
+{
+  name: "Blanca Suárez",
+  src: "https://e01-phantom-elmundo.uecdn.es/308a3809165b2416f31de1c1a9fc47f3/crop/0x0/2421x1614/resize/646/f/webp/assets/multimedia/imagenes/2025/10/22/17611433390973.jpg",
+  type: "actor",
+  hint: "Figura destacada de la televisión y el cine español, protagonista de series muy populares."
+},
+  {
+    name: "Harry Potter",
+    src: "https://kids.kiddle.co/images/d/d7/Harry_Potter_character_poster.jpg",
+    type: "personaje",
+    hint: "Le encanta el calendario escolar"
+  },
+  {
+    name: "Frodo Bolsón",
+    src: "https://dunesjedi.wordpress.com/wp-content/uploads/2019/01/frodo_0-2.jpg?w=1440&h=810",
+    type: "personaje",
+    hint: "No le gustan los zapatos"
+  },
+  {
+    name: "Neo",
+    src: "https://static.wikia.nocookie.net/matrix/images/3/32/Neo.jpg/revision/latest?cb=20250617223852",
+    type: "personaje",
+    hint: "Siempre parece distraído en clase"
+  },
+  {
+    name: "Darth Vader",
+    src: "https://media.revistagq.com/photos/62a0a996223a33e985e4d59a/16:9/w_1280,c_limit/1072434_110615-cc-Darth-Vader-Thumb.jpg",
+    type: "personaje",
+    hint: "Está mal de la garganta"
+  },
+  {
+    name: "Lara Croft",
+    src: "https://media.revistagq.com/photos/5ca5f7883492a9ab92bf1521/master/w_1280,c_limit/laracroftangelina_5777.jpg",
+    type: "personaje",
+    hint: "Nunca deja que una estatua le arruine el plan"
+  },
+  {
+    name: "Wall-E",
+    src: "https://static.wikia.nocookie.net/pixar/images/c/ce/Wall-E_Cubecolors.jpg/revision/latest/scale-to-width-down/1000?cb=20090615011459",
+    type: "personaje",
+    hint: "Se emociona con cualquier cosa brillante"
+  },
+  {
+    name: "Katniss Everdeen",
+    src: "https://static.standard.co.uk/s3fs-public/thumbnails/image/2015/11/06/08/22hungergamesmain0611a.jpg?crop=8:5,smart&quality=75&auto=webp&width=1000",
+    type: "personaje",
+    hint: "Siempre lleva algo en la espalda"
+  },
+  {
+    name: "Dom Toretto",
+    src: "https://fotografias-2.larazon.es/clipping/cmsimages01/2025/08/19/957C4C8D-D4CF-4E6B-AC27-48D24A15062C/este-actor-rechazo-papel-dom-fast-furious-podria-haber-sido-mejor-que-vin-diesel_98.jpg?crop=1900?width=1600&height=900",
+    type: "personaje",
+    hint: "Se toma muy en serio la comida en familia"
+  },
+  {
+    name: "Simba",
+    src: "https://static.wikia.nocookie.net/disney/images/3/37/Profile_-_Simba.jpeg/revision/latest/scale-to-width-down/1000?cb=20190312043852",
+    type: "personaje",
+    hint: "Tito, te pasaste"
+  },
+  {
+    name: "Shrek",
+    src: "https://static.wikia.nocookie.net/universalstudios/images/f/f2/Shrek2-disneyscreencaps.com-4369.jpg/revision/latest/scale-to-width-down/1000?cb=20250224023204",
+    type: "personaje",
+    hint: "Prefiere estar solo en su casa"
+  },
+  {
+    name: "Pikachu",
+    src: "https://www.iamfy.co/cdn/shop/files/m_2Fx1000_2Fa7340898-92bf-453f-a3a1-c00f5cd15711.jpg?crop=center&height=720&v=1760633600&width=540",
+    type: "personaje",
+    hint: "Siempre chispeante, incluso sin enchufe"
+  },
+  {
+    name: "Gandalf",
+    src: "https://preview.redd.it/does-anyone-else-prefer-gandalf-the-grey-to-gandalf-the-v0-m2irq834fejc1.jpeg?auto=webp&s=75f3a543c781a6f5e52a19a68f4f0ee729f365a5",
+    type: "personaje",
+    hint: "Suele aparecer cuando menos lo esperas"
+  },
+  {
+    name: "Iron Man",
+    src: "https://media.revistagq.com/photos/5ec50516affc6618c4a2fd30/16:9/w_1280,c_limit/iron-man-2008.jpg",
+    type: "personaje",
+    hint: "Nunca pierde un reflejo metálico"
+  },
+  {
+    name: "Captain America",
+    src: "https://media.revistagq.com/photos/5ca5ff1526edfb48fefc312a/master/w_1280,c_limit/capi_6234.jpg",
+    type: "personaje",
+    hint: "Nunca deja que le empujen en la cola"
+  },
+  {
+    name: "Thor",
+    src: "https://platform.theverge.com/wp-content/uploads/sites/2/chorus/uploads/chorus_asset/file/13068259/thor_thedarkworld29_1020.1419980063.jpg?quality=90&strip=all&crop=0.073529411764703%2C0%2C99.852941176471%2C100&w=1200",
+    type: "personaje",
+    hint: "Siempre lleva algo pesado en la mano"
+  },
+  {
+    name: "Hulk",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Hulk_%282540708438%29.jpg/1280px-Hulk_%282540708438%29.jpg",
+    type: "personaje",
+    hint: "Se enfada cuando no le ponen snacks"
+  },
+  {
+    name: "Batman",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Batman_%28black_background%29.jpg/960px-Batman_%28black_background%29.jpg",
+    type: "personaje",
+    hint: "Prefiere la noche y el café fuerte"
+  },
+  {
+    name: "Joker",
+    src: "https://upload.wikimedia.org/wikipedia/en/9/90/HeathJoker.png",
+    type: "personaje",
+    hint: "Siempre con sonrisa incomprensible"
+  },
+  {
+    name: "Elsa",
+    src: "https://i.redd.it/pi3qk88t15dg1.jpeg",
+    type: "personaje",
+    hint: ""
+  },
+  {
+    name: "Woody",
+    src: "https://static.wikia.nocookie.net/disney/images/2/22/Profile_-_Woody.jpeg/revision/latest?cb=20200711052417",
+    type: "personaje",
+    hint: "Siempre preocupado por el orden del grupo"
+  },
+  {
+    name: "Buzz Lightyear",
+    src: "https://dbx1fvnryss68.cloudfront.net/ssr/images/bg-BixcAgi_.webp?from-format=jpg",
+    type: "personaje",
+    hint: "Si puedo."
+  },
+  {
+    name: "Sonic",
+    src: "https://platform.theverge.com/wp-content/uploads/sites/2/chorus/uploads/chorus_asset/file/23373597/sth2_ff_067.jpeg?quality=90&strip=all&crop=29.095238095238,0,41.809523809524,100",
+    type: "personaje",
+    hint: "Nunca puede quedarse quieto"
+  },
+  {
+    name: "Mario",
+    src: "https://static.wikia.nocookie.net/mario/images/8/8d/Mario_artwork_oddysey.png/revision/latest?cb=20170916230207&path-prefix=es",
+    type: "personaje",
+    hint: "mmmm... Boletus!"
+  },
+  {
+    name: "Naruto Uzumaki",
+    src: "https://akamai.sscdn.co/uploadfile/letras/fotos/2/5/7/4/2574f9070ce48b988fe2693a60c40427.jpg",
+    type: "personaje",
+    hint: "Nunca se rinde, aunque le duela el estómago"
+  },
+  {
+    name: "Goku",
+    src: "https://www.superherotoystore.com/cdn/shop/articles/e33c2fa94c03efa06678116f80d62d0d_1c4bccf2-0e38-4f4c-8dcd-f51830857d15_600x.jpg?v=1757494254",
+    type: "personaje",
+    hint: "Se entusiasma con cualquier desafío"
+  },
+  {
+    name: "Totoro",
+    src: "https://static.wikia.nocookie.net/disney/images/d/d5/Profile_-_Totoro.png/revision/latest?cb=20240514125131",
+    type: "personaje",
+    hint: "Guardia silencioso del bosque"
+  },
+  {
+    name: "Jack Sparrow",
+    src: "https://static.wikia.nocookie.net/pirates/images/e/ea/DMTNT_Jack_Sparrow_cropped.png/revision/latest?cb=20251003064720",
+    type: "personaje",
+    hint: "Recordareis este día"
+	},
+	{
+    name: "Terminator",
+    src: "https://media.revistagq.com/photos/5dbab1e1d19dec0008a41e77/16:9/w_1280,c_limit/terminator%20portada.jpg",
+    type: "personaje",
+    hint: "Siempre vuelve"
+},
+{
+    name: "Walter White",
+    src: "https://static.wikia.nocookie.net/breakingbad/images/e/e7/BB-S5B-Walt-590.jpg/revision/latest/scale-to-width-down/1000?cb=20250728222301",
+    type: "personaje",
+    hint: "Nunca subestimes su lado tranquilo"
+},
+{
+    name: "Monstruo de las galletas",
+    src: "https://www.tapasmagazine.es/wp-content/uploads/2023/12/receta-galletas-monstruo-galletas-1.jpg",
+    type: "personaje",
+    hint: "Tiene problemas con la moderación"
+  }
+];
+
+let images = [...ORIGINAL_IMAGES];
+
+
+// ====================
+// ESTADO
+// ====================
+let filteredImages = [...images];
+let currentIndex = 0;
+let pixelSize = 80;
+let paused = false;
+let img = new Image();
+let showHint = false;
+let showName = false;
+let pixelationSpeed = 0.001; // Base speed
+
+shuffleArray(filteredImages);
+shuffleArray(filteredImages);
+
+const hintDiv = document.getElementById("hint");
+const nameDiv = document.getElementById("name");
+const typeDiv = document.getElementById("type");
+
+const toggleHintBtn = document.getElementById("toggleHint");
+const toggleNameBtn = document.getElementById("toggleName");
+const zoomRange = document.getElementById("zoomRange");
+const speedRange = document.getElementById("speedRange");
+const pauseOverlay = document.getElementById("pause-overlay");
+
+let animationId;
+
+zoomRange.oninput = (e) => {
+    document.documentElement.style.setProperty('--zoom', e.target.value);
+};
+
+speedRange.oninput = (e) => {
+    // Escala el valor del slider (1-10) a un multiplicador de velocidad
+    // El valor por defecto 5 será ~0.001
+    pixelationSpeed = e.target.value * 0.0002;
+};
+
+toggleHintBtn.onclick = () => {
+    showHint = !showHint;
+    toggleHintBtn.textContent = showHint ? "💡 Pista: ON" : "💡 Pista: OFF";
+    updateHint();
+};
+
+toggleNameBtn.onclick = () => {
+	showName = !showName;
+    toggleNameBtn.textContent = showName ? "✅ Revelar" : "🔄 Ocultar";
+    updateName();
+};
+
+function updateHint() {
+    if (!showHint || filteredImages.length === 0) {
+        hintDiv.textContent = "";
+        return;
+    }
+
+    hintDiv.textContent = filteredImages[currentIndex].hint || "";
+}
+
+function updateName() {
+    if (!showName || filteredImages.length === 0) {
+        nameDiv.textContent = "";
+        return;
+    }
+
+    nameDiv.textContent = filteredImages[currentIndex].name || "";
+}
+
+// ====================
+// CARGA DE IMAGEN
+// ====================
+function draw() {
+    if (!paused && pixelSize > 1) {
+        pixelSize -= pixelSize * pixelationSpeed;
+        if (pixelSize < 1) pixelSize = 1;
+    }
+
+    const w = canvas.width / pixelSize;
+    const h = canvas.height / pixelSize;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, w, h);
+    ctx.drawImage(canvas, 0, 0, w, h, 0, 0, canvas.width, canvas.height);
+
+    animationId = requestAnimationFrame(draw);
+	
+}
+
+function loadImage() {
+    if (filteredImages.length === 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hintDiv.textContent = "No hay imágenes disponibles";
+        nameDiv.textContent = "";
+        typeDiv.textContent = "";
+        return;
+    }
+
+    img.crossOrigin = "anonymous";
+    img.src = filteredImages[currentIndex].src;
+    img.onload = () => {
+        pixelSize = 80;  // reset del pixelSize
+        paused = false;
+        pauseOverlay.style.display = "none";
+
+        // Cancelamos cualquier animación previa
+        if (animationId) cancelAnimationFrame(animationId);
+
+        draw(); // iniciamos la nueva animación
+        
+        showName = false;
+        toggleNameBtn.textContent = "✅ Revelar";
+        updateHint(); // actualizar pista
+        updateName();
+    };
+    
+    // Formatear el texto de tipo
+    const type = filteredImages[currentIndex].type;
+    typeDiv.textContent = type === 'actor' ? '— Actor —' : '— Personaje —';
+}
+
+// ====================
+// CONTROLES
+// ====================
+function togglePause() {
+    paused = !paused;
+    pauseOverlay.style.display = paused ? "flex" : "none";
+}
+
+canvas.onclick = togglePause;
+canvas.ontouchstart = (e) => {
+    e.preventDefault();
+    togglePause();
+};
+
+const goToNext = () => {
+    currentIndex = (currentIndex + 1) % filteredImages.length;
+    loadImage();
+};
+
+const goToPrev = () => {
+    currentIndex = (currentIndex - 1 + filteredImages.length) % filteredImages.length;
+    loadImage();
+};
+
+document.getElementById("next-side").onclick = (e) => {
+    e.stopPropagation();
+    goToNext();
+};
+
+document.getElementById("prev-side").onclick = (e) => {
+    e.stopPropagation();
+    goToPrev();
+};
+
+// ====================
+// FILTROS
+// ====================
+function filterByType(type, btn) {
+    // Actualizar estilo de botones
+    if (btn) {
+        const buttons = document.querySelectorAll('.filters button');
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    if (type === "all") {
+        filteredImages = [...images];
+    } else {
+        filteredImages = images.filter(img => img.type === type);
+    }
+    shuffleArray(filteredImages);
+    currentIndex = 0;
+    loadImage();
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+// ====================
+// IMPORTAR
+// ====================
+function openImport() {
+    document.getElementById("import-modal-overlay").classList.add("active");
+}
+
+function closeImport() {
+    document.getElementById("import-modal-overlay").classList.remove("active");
+}
+
+function processTextImport() {
+    const text = document.getElementById("import-textarea").value.trim();
+    if (!text) {
+        alert("Por favor, pega el contenido JSON en el cuadro de texto.");
+        return;
+    }
+    try {
+        const cleanText = text.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'");
+        const newData = JSON.parse(cleanText);
+        
+        if (Array.isArray(newData)) {
+            if (newData.length > 0) {
+                const first = newData[0];
+                if (!first.name || !first.src || !first.type) {
+                    throw new Error("Cada objeto debe tener al menos 'name', 'src' y 'type'.");
+                }
+            }
+            loadNewImages(newData);
+        } else {
+            alert("El formato debe ser una lista [ {...}, {...} ]");
+        }
+    } catch (e) {
+        alert("Error al procesar los datos: " + e.message);
+        console.error(e);
+    }
+}
+
+function processFileImport(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const content = e.target.result;
+        document.getElementById("import-textarea").value = content;
+        processTextImport();
+    };
+    reader.readAsText(file);
+}
+
+function loadNewImages(newData) {
+    if (!confirm("Esto reemplazará la lista actual y reiniciará el juego. ¿Continuar?")) return;
+    
+    images = [...newData];
+    
+    // Resetear botones de filtro al original (Todos)
+    const buttons = document.querySelectorAll('.filters button');
+    buttons.forEach(b => b.classList.remove('active'));
+    buttons[0].classList.add('active');
+
+    filterByType('all'); // Esto recarga filteredImages y llama a loadImage()
+    closeImport();
+}
+
+function loadDefaultImages() {
+    loadNewImages(ORIGINAL_IMAGES);
+}
+
+// ====================
+// INICIO
+// ====================
+loadImage();
+</script>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 {
-  "name": "Hitster Casero",
-  "short_name": "Hitster",
-  "description": "Edición Móvil de Hitster Casero",
+  "name": "Cronomusic",
+  "short_name": "Cronomusic",
+  "description": "Edición Móvil de Cronomusic",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#141E30",
