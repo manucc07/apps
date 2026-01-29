@@ -11,6 +11,10 @@
     {
       "source": "/cronomusic",
       "destination": "/cronomusic.html"
+    },
+    {
+      "source": "/hilados",
+      "destination": "/hilados.html"
     }
   ]
 }

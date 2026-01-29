@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Hilados - Cronomusic</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
+  <meta name="theme-color" content="#141E30">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cronomusic">
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --accent: #38bdf8;
+      --surface: rgba(255, 255, 255, 0.05);
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --card-back: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      --card-front: linear-gradient(135deg, #0ea5e9 0%, #22d3ee 100%);
+      --zoom: 1;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0, transparent 50%), 
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0, transparent 50%);
+      background-attachment: fixed;
+      color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom) 20px;
+      box-sizing: border-box;
+    }
+
+    /* Mensaje de orientación */
+    #orientation-msg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg-dark);
+      z-index: 10000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    @media (orientation: portrait) and (max-width: 900px) {
+      #orientation-msg { display: flex; }
+    }
+
+    .header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    #zoom-control-header {
+      background: var(--surface);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid var(--surface-border);
+      user-select: none;
+    }
+
+    #zoom-control-header span {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      margin-bottom: 2px;
+      opacity: 0.8;
+      text-transform: uppercase;
+    }
+
+    #zoom-control-header input {
+      width: 70px;
+      cursor: pointer;
+      height: 12px;
+    }
+
+    @media (max-width: 480px) {
+      #zoom-control-header {
+        padding: 4px 8px;
+        border-radius: 8px;
+      }
+      #zoom-control-header span {
+        font-size: 7px;
+      }
+      #zoom-control-header input {
+        width: 50px;
+        height: 10px;
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-icon {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--accent);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .back-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0;
+      background: linear-gradient(to right, #38bdf8, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.05em;
+      text-align: center;
+    }
+
+    #board-container {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow: auto;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    #grid-scaler {
+      transform: scale(var(--zoom));
+      transform-origin: top center;
+      transition: transform 0.2s ease;
+      display: flex;
+      justify-content: center;
+      padding-bottom: 50px; /* Margen para que el escalado no corte por abajo */
+    }
+
+    #grid {
+      display: grid;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .card {
+      background: #d2b48c; /* Marrón clarito (Tan/LightBrown) */
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      width: 130px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #1e293b; /* Texto oscuro para contrastar con el marrón claro */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s;
+      user-select: none;
+      word-break: break-word;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      filter: brightness(1.1);
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+
+    .modal {
+      background: var(--bg-gradient);
+      max-width: 400px;
+      width: 100%;
+      padding: 30px;
+      border-radius: 24px;
+      border: 1px solid var(--surface-border);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      color: var(--accent);
+      font-size: 1.5rem;
+    }
+
+
+    /* Revealed Card Styles */
+    .card.revealed, .card.solution-view {
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(0) !important;
+      box-shadow: none;
+    }
+
+    .card.revealed-red, .card.solution-red { 
+      background: #ef4444 !important; 
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.3), 0 0 15px rgba(239, 68, 68, 0.4);
+      color: white;
+    }
+    .card.revealed-blue, .card.solution-blue { 
+      background: #3b82f6 !important; 
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.3), 0 0 15px rgba(59, 130, 246, 0.4);
+      color: white;
+    }
+    .card.revealed-black, .card.solution-black { 
+      background: #111 !important; 
+      color: #444;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+      border-color: #333;
+    }
+    .card.revealed-neutral, .card.solution-neutral { 
+      background: #e2e8f0 !important; 
+      color: #94a3b8;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+      border-color: #cbd5e1;
+    }
+
+    .btn-main {
+      background: var(--card-back);
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .dimension-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .dim-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: white;
+      padding: 15px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dim-btn:hover {
+      background: var(--card-back);
+      border-color: transparent;
+      transform: translateY(-2px);
+    }
+
+    .dim-btn span {
+      font-size: 0.8rem;
+      opacity: 0.6;
+    }
+
+    @media (max-width: 480px) {
+      .header h1 { font-size: 1.2rem; }
+      .header { padding: 5px 0; }
+      .back-btn { padding: 6px 10px; font-size: 0.8rem; }
+      .card {
+        width: 100px;
+        height: 60px;
+        font-size: 0.75rem;
+        padding: 8px;
+        border-radius: 10px;
+      }
+      #grid { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="/" class="back-btn">← Inicio</a>
+    <h1>Hilados</h1>
+    <div class="header-actions">
+      <div id="zoom-control-header">
+        <span>ZOOM</span>
+        <input type="range" id="zoomRange" min="0.5" max="1.5" step="0.1" value="1">
+      </div>
+      <button id="summary-btn" class="btn-icon" style="display: none;" onclick="openSummary()" title="Ver Resumen">📊</button>
+      <button id="share-btn" class="btn-icon" style="display: none;" onclick="openShare()" title="Compartir Partida">🔗</button>
+      <button id="solution-btn" class="btn-icon" style="display: none;" onclick="toggleSolution()" title="Ver/Ocultar Solución">👁️</button>
+    </div>
+  </div>
+
+  <div id="board-container">
+    <div id="grid-scaler">
+      <div id="grid"></div>
+    </div>
+  </div>
+
+  <div id="orientation-msg">
+    <div style="font-size: 40px;">🔄</div>
+    <h3>Modo Horizontal</h3>
+    <p>Por favor, gira tu dispositivo para una mejor experiencia.</p>
+  </div>
+
+  <div id="setup-modal" class="modal-overlay">
+    <div class="modal">
+      <h2>Hilados</h2>
+      <p>Selecciona el tamaño de la cuadrícula o carga una partida:</p>
+      <div class="dimension-options">
+        <button class="dim-btn" onclick="startGame(4, 4)">
+          4 x 4
+          <span>16 palabras</span>
+        </button>
+        <button class="dim-btn" onclick="startGame(5, 4)">
+          5 x 4
+          <span>20 palabras</span>
+        </button>
+        <button class="dim-btn" onclick="startGame(5, 5)">
+          5 x 5
+          <span>25 palabras</span>
+        </button>
+        <button class="dim-btn" onclick="startGame(6, 5)">
+          6 x 5
+          <span>30 palabras</span>
+        </button>
+      </div>
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--surface-border);">
+        <button class="btn-main" onclick="openShare()" style="width: 100%; background: var(--surface); color: var(--accent); border: 1px solid var(--surface-border);">Cargar Partida con Código 📥</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="summary-modal" class="modal-overlay" style="display: none;" onclick="closeSummary()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width: fit-content; padding: 25px;">
+      <h2 style="margin-bottom: 20px;">Mapa de Solución</h2>
+      <div id="summary-grid-container" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px; border: 1px solid var(--surface-border); margin-bottom: 25px;">
+        <div id="summary-grid" style="display: grid; gap: 6px; justify-content: center;"></div>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button class="btn-main" onclick="shareSummary()" style="padding: 10px 20px; font-size: 14px;">Compartir 📤</button>
+        <button class="btn-main" style="background: rgba(255,255,255,0.1); color: white; padding: 10px 20px; font-size: 14px;" onclick="closeSummary()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="share-modal" class="modal-overlay" style="display: none;" onclick="closeShare()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width: 500px; padding: 25px;">
+      <h2 style="margin-bottom: 20px;">Compartir Partida</h2>
+      
+      <div style="margin-bottom: 20px;">
+        <p style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">Código de tu partida actual:</p>
+        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px solid var(--surface-border); display: flex; flex-direction: column; gap: 10px;">
+          <textarea id="share-code-display" readonly style="background: transparent; border: none; color: var(--accent); font-family: monospace; font-size: 10px; width: 100%; height: 60px; resize: none; word-break: break-all;"></textarea>
+          <div style="display: flex; gap: 8px; justify-content: center;">
+            <button class="btn-main" onclick="copyShareCode()" style="padding: 8px 15px; font-size: 12px; background: var(--surface);">Copiar 📋</button>
+            <button class="btn-main" onclick="shareOnWhatsApp()" style="padding: 8px 15px; font-size: 12px; background: #25D366; color: white;">WhatsApp 📱</button>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid var(--surface-border); margin: 25px 0;">
+
+      <div style="margin-bottom: 10px;">
+        <p style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">Introducir código de partida:</p>
+        <textarea id="import-code-input" placeholder="Pega el código aquí..." style="width: 100%; height: 60px; background: rgba(0,0,0,0.3); border: 1px solid var(--surface-border); border-radius: 12px; color: #f1f5f9; padding: 10px; font-family: monospace; font-size: 10px; resize: none; box-sizing: border-box; margin-bottom: 15px;"></textarea>
+        <button class="btn-main" onclick="loadGameFromCode()" style="width: 100%;">Cargar Partida 📥</button>
+      </div>
+
+      <button class="btn-main" style="background: transparent; color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); margin-top: 20px; width: 100%;" onclick="closeShare()">Cancelar</button>
+    </div>
+  </div>
+
+
+  <script>
+    const WORDS_POOL = [
+      "Árbol", "Casa", "Perro", "Gato", "Sol", "Luna", "Estrella", "Río", "Mar", "Montaña",
+      "Libro", "Mesa", "Silla", "Puerta", "Ventana", "Coche", "Avión", "Tren", "Barco", "Flor",
+      "Fruta", "Pan", "Agua", "Fuego", "Tierra", "Aire", "Ciudad", "Pueblo", "Camino", "Puente",
+      "Lápiz", "Llave", "Moneda", "Billete", "Marco", "Lienzo", "Espejo", "Candado", "Pincel", "Libreta",
+      "Cabeza", "Cuerpo", "Amigo", "Familia", "Amor", "Paz", "Guerra", "Música", "Pintura", "Cine",
+      "Teatro", "Deporte", "Fútbol", "Viaje", "Comida", "Bebida", "Sueño", "Risa", "Llanto", "Vida",
+      "Muerte", "Tiempo", "Espacio", "Mundo", "Historia", "Ciencia", "Arte", "Color", "Forma", "Luz",
+      "Sombra", "Calor", "Frío", "Nieve", "Lluvia", "Viento", "Bosque", "Desierto", "Isla", "Selva",
+      "Animal", "Planta", "Hombre", "Mujer", "Niño", "Niña", "Juego", "Escuela", "Trabajo", "Salud",
+      "Felicidad", "Tristeza", "Miedo", "Ira", "Sorpresa", "Deseo", "Poder", "Justicia", "Ley", "Verdad",
+      "Espejo", "Camisa", "Zapatos", "Sombrero", "Relámpago", "Trueno", "Arena", "Piedra", "Metal", "Oro",
+      "Plata", "Cobre", "Hierro", "Espada", "Escudo", "Castillo", "Rey", "Reina", "Príncipe", "Princesa",
+      "Dragón", "Magia", "Hechizo", "Varita", "Libreta", "Bolígrafo", "Goma", "Regla", "Mapa", "Brújula",
+      "Telescopio", "Microscopio", "Célula", "Átomo", "Energía", "Fuerza", "Masa", "Peso", "Altura", "Ancho",
+      "Largo", "Profundo", "Círculo", "Cuadrado", "Triángulo", "Esfera", "Cubo", "Pirámide", "Naranja", "Limón",
+      "Uva", "Fresa", "Plátano", "Manzana", "Pera", "Piña", "Coco", "Melón", "Sandía", "Cereza",
+      "Papel", "Teclado", "Ratón", "Pantalla", "Enchufe", "Caja", "Bolsa", "Sobre", "Sello", "Paraguas",
+      "Lápiz", "Bicicleta", "Guitarra", "Piano", "Flauta", "Violín", "Tambor", "Lámpara", "Reloj", "Teléfono",
+      "Martillo", "Clavo", "Tuerca", "Cable", "Botella", "Vaso", "Plato", "Cuchara", "Tenedor", "Cuchillo",
+      "Sartén", "Olla", "Nevera", "Horno", "Escoba", "Llanta", "Motor", "Batería", "Tijeras", "Alicates",
+      "Nave", "Satélite", "Radio", "Televisión", "Cámara", "Foto", "Imagen", "Sonido", "Voz", "Palabra"
+    ];
+
+    let currentSolution = [];
+    let currentWords = [];
+    let currentCols = 0;
+    let currentRows = 0;
+    let isShowingSolution = false;
+
+    // Zoom control
+    const zoomRange = document.getElementById("zoomRange");
+    if (zoomRange) {
+      zoomRange.oninput = (e) => {
+        document.documentElement.style.setProperty('--zoom', e.target.value);
+      };
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function generateSolution(total) {
+      const solution = new Array(total).fill('neutral');
+      
+      // Calculate number of cards for teams
+      let teamTotal = Math.floor(total / 2);
+      if (teamTotal % 2 === 0) teamTotal += 1;
+      
+      // One team gets one more card than the other
+      const teamA = Math.ceil(teamTotal / 2);
+      const teamB = Math.floor(teamTotal / 2);
+      
+      // Randomly assign which team is Red and which is Blue
+      const isRedFirst = Math.random() > 0.5;
+      const redCount = isRedFirst ? teamA : teamB;
+      const blueCount = isRedFirst ? teamB : teamA;
+      
+      const indices = shuffle([...Array(total).keys()]);
+      
+      let currentPos = 0;
+      // Assign Black (Assassin)
+      solution[indices[currentPos++]] = 'black';
+      
+      // Assign Red
+      for (let i = 0; i < redCount; i++) {
+        solution[indices[currentPos++]] = 'red';
+      }
+      
+      // Assign Blue
+      for (let i = 0; i < blueCount; i++) {
+        solution[indices[currentPos++]] = 'blue';
+      }
+      
+      return solution;
+    }
+
+    function startGame(cols, rows) {
+      currentCols = cols;
+      currentRows = rows;
+      isShowingSolution = false;
+      document.getElementById('setup-modal').style.display = 'none';
+      document.getElementById('solution-btn').style.display = 'flex';
+      document.getElementById('summary-btn').style.display = 'flex';
+      document.getElementById('share-btn').style.display = 'flex';
+      
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      
+      // Set grid columns
+      grid.style.gridTemplateColumns = `repeat(${cols}, auto)`;
+      grid.style.width = "max-content"; // Asegura que el grid no se colapse ni expanda más de lo necesario
+      
+      const totalCards = cols * rows;
+      currentWords = shuffle([...WORDS_POOL]).slice(0, totalCards);
+      
+      // Generate the secret solution
+      currentSolution = generateSolution(totalCards);
+
+      renderBoard();
+    }
+
+    function renderBoard() {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      grid.style.gridTemplateColumns = `repeat(${currentCols}, auto)`;
+      grid.style.width = "max-content";
+
+      currentWords.forEach((word, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.textContent = word.toUpperCase();
+        card.dataset.index = index;
+        
+        // Add click event to reveal color
+        card.onclick = () => {
+          if (isShowingSolution) return;
+          if (card.classList.contains('revealed')) return;
+          const type = currentSolution[index];
+          card.classList.add('revealed', `revealed-${type}`);
+        };
+        
+        grid.appendChild(card);
+      });
+    }
+
+    function openShare() {
+      const modal = document.getElementById('share-modal');
+      const codeDisplay = document.getElementById('share-code-display');
+      
+      const gameState = {
+        c: currentCols,
+        r: currentRows,
+        w: currentWords,
+        s: currentSolution
+      };
+      
+      const code = btoa(unescape(encodeURIComponent(JSON.stringify(gameState))));
+      codeDisplay.value = code;
+      
+      modal.style.display = 'flex';
+    }
+
+    function closeShare() {
+      document.getElementById('share-modal').style.display = 'none';
+      document.getElementById('import-code-input').value = '';
+    }
+
+    function copyShareCode() {
+      const codeDisplay = document.getElementById('share-code-display');
+      codeDisplay.select();
+      document.execCommand('copy');
+      alert('¡Código copiado al portapapeles!');
+    }
+
+    function shareOnWhatsApp() {
+      const code = document.getElementById('share-code-display').value;
+      const text = encodeURIComponent(`¡Únete a mi partida de Hilados 🧵! Aquí tienes el código para cargarla: ${code}`);
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
+
+    function loadGameFromCode() {
+      const codeInput = document.getElementById('import-code-input').value.trim();
+      if (!codeInput) {
+        alert('Por favor, introduce un código de partida.');
+        return;
+      }
+
+      try {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(codeInput))));
+        
+        if (!decoded.c || !decoded.r || !decoded.w || !decoded.s) {
+          throw new Error('Formato de código inválido.');
+        }
+
+        if (!confirm('¿Quieres cargar esta partida? Se perderá el progreso actual.')) return;
+
+        currentCols = decoded.c;
+        currentRows = decoded.r;
+        currentWords = decoded.w;
+        currentSolution = decoded.s;
+        isShowingSolution = false;
+
+        document.getElementById('setup-modal').style.display = 'none';
+        document.getElementById('solution-btn').style.display = 'flex';
+        document.getElementById('summary-btn').style.display = 'flex';
+        document.getElementById('share-btn').style.display = 'flex';
+        
+        const btn = document.getElementById('solution-btn');
+        btn.style.color = "var(--accent)";
+
+        renderBoard();
+        closeShare();
+        alert('Partida cargada con éxito.');
+
+      } catch (e) {
+        alert('Error al cargar la partida: El código no es válido.');
+        console.error(e);
+      }
+    }
+
+    function toggleSolution() {
+      if (!isShowingSolution) {
+        if (!confirm("¿Seguro que quieres ver la solución en el tablero?")) return;
+      }
+      isShowingSolution = !isShowingSolution;
+      const btn = document.getElementById('solution-btn');
+      const cards = document.querySelectorAll('.card');
+      
+      if (isShowingSolution) {
+        btn.style.color = "#ef4444"; // Cambiar color icono para indicar modo solución
+        cards.forEach((card, index) => {
+          const type = currentSolution[index];
+          card.classList.add('solution-view', `solution-${type}`);
+        });
+      } else {
+        btn.style.color = "var(--accent)";
+        cards.forEach((card, index) => {
+          const type = currentSolution[index];
+          card.classList.remove('solution-view', `solution-${type}`);
+        });
+      }
+    }
+
+    function openSummary() {
+      if (!confirm("¿Seguro que quieres abrir el mapa de solución?")) return;
+      const modal = document.getElementById('summary-modal');
+      const grid = document.getElementById('summary-grid');
+      grid.innerHTML = '';
+      grid.style.gridTemplateColumns = `repeat(${currentCols}, 1fr)`;
+
+      currentSolution.forEach(type => {
+        const item = document.createElement('div');
+        item.style.width = '24px';
+        item.style.height = '24px';
+        item.style.borderRadius = '50%';
+        item.style.boxShadow = 'inset 0 0 10px rgba(0,0,0,0.2)';
+        
+        if (type === 'red') {
+          item.style.background = '#ef4444';
+          item.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.4), inset 0 0 10px rgba(0,0,0,0.2)';
+        }
+        else if (type === 'blue') {
+          item.style.background = '#3b82f6';
+          item.style.boxShadow = '0 0 8px rgba(59, 130, 246, 0.4), inset 0 0 10px rgba(0,0,0,0.2)';
+        }
+        else if (type === 'black') {
+          item.style.background = '#111';
+          item.style.border = '1px solid #333';
+        }
+        else {
+          item.style.background = '#e2e8f0';
+          item.style.opacity = '0.5';
+        }
+        
+        grid.appendChild(item);
+      });
+
+      modal.style.display = 'flex';
+    }
+
+    function closeSummary() {
+      document.getElementById('summary-modal').style.display = 'none';
+    }
+
+    async function shareSummary() {
+      const container = document.getElementById('summary-grid-container');
+      
+      try {
+        // Usamos un canvas temporal para crear la imagen de la solución
+        const canvas = document.createElement('canvas');
+        const cellSize = 32;
+        const gap = 8;
+        const padding = 24;
+        
+        canvas.width = currentCols * cellSize + (currentCols - 1) * gap + padding * 2;
+        canvas.height = currentRows * cellSize + (currentRows - 1) * gap + padding * 2;
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Fondo con degradado sutil
+        const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grd.addColorStop(0, "#1e293b");
+        grd.addColorStop(1, "#0f172a");
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        currentSolution.forEach((type, index) => {
+          const col = index % currentCols;
+          const row = Math.floor(index / currentCols);
+          
+          const x = padding + col * (cellSize + gap);
+          const y = padding + row * (cellSize + gap);
+          
+          if (type === 'red') {
+            ctx.fillStyle = '#ef4444';
+            ctx.shadowColor = 'rgba(239, 68, 68, 0.5)';
+            ctx.shadowBlur = 10;
+          } else if (type === 'blue') {
+            ctx.fillStyle = '#3b82f6';
+            ctx.shadowColor = 'rgba(59, 130, 246, 0.5)';
+            ctx.shadowBlur = 10;
+          } else if (type === 'black') {
+            ctx.fillStyle = '#111';
+            ctx.shadowBlur = 0;
+          } else {
+            ctx.fillStyle = 'rgba(226, 232, 240, 0.5)';
+            ctx.shadowBlur = 0;
+          }
+          
+          ctx.beginPath();
+          ctx.arc(x + cellSize/2, y + cellSize/2, cellSize/2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0; // Reset shadow
+        });
+
+        const dataUrl = canvas.toDataURL('image/png');
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], 'hilados-solucion.png', { type: 'image/png' });
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'Solución Hilados',
+            text: 'Aquí tienes la solución de nuestra partida de Hilados 🧵'
+          });
+        } else {
+          // Fallback: Descargar imagen
+          const link = document.createElement('a');
+          link.download = 'hilados-solucion.png';
+          link.href = dataUrl;
+          link.click();
+        }
+      } catch (err) {
+        console.error('Error al compartir:', err);
+        alert('No se pudo compartir la imagen. Intenta descargándola manualmente.');
+      }
+    }
+
+    // PWA Support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+      });
+    }
+  </script>
+</body>
+</html>

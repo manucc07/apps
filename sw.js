@@ -3,6 +3,7 @@ const ASSETS = [
   'index.html',
   'cronomusic.html',
   'who_is.html',
+  'hilados.html',
   'manifest.json'
 ];
 
