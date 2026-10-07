@@ -1409,140 +1409,175 @@
 
   async function playSong(data, btn) {
 	  if (btn) btn.style.background = "var(--accent)";
-
-	  // Si estamos viendo la carta boca arriba, detener animación
+	
 	  const popupOverlay = document.getElementById("card-popup-overlay");
 	  if (popupOverlay.classList.contains("active")) {
-		const content = document.getElementById("popup-content");
-		const cardView = content.querySelector(".popup-card-view");
-
-		if (cardView?.classList.contains("front-view")) {
-		  stopPlayingAnimation();
-		}
+	    const content = document.getElementById("popup-content");
+	    const cardView = content.querySelector(".popup-card-view");
+	
+	    if (cardView?.classList.contains("front-view")) {
+	      stopPlayingAnimation();
+	    }
 	  }
-
-	  const normalize = (str) =>
-		(str || "")
-		  .toLowerCase()
-		  .normalize("NFD")
-		  .replace(/[\u0300-\u036f]/g, "")
-		  .replace(/[^\w\s]/g, "")
-		  .trim();
-
+	
+	  function normalize(str) {
+	    return (str || "")
+	      .toLowerCase()
+	      .normalize("NFD")
+	      .replace(/[\u0300-\u036f]/g, "")
+	      .replace(/[^\w\s]/g, " ")
+	      .replace(/\s+/g, " ")
+	      .trim();
+	  }
+	
+	  function getBestTrack(results, song) {
+	    const targetArtist = normalize(song.author);
+	    const targetTitle = normalize(song.title);
+	
+	    let bestTrack = null;
+	    let bestScore = -Infinity;
+	
+	    for (const track of results) {
+	      const artist = normalize(track.artistName);
+	      const title = normalize(track.trackName);
+	
+	      let score = 0;
+	
+	      // ========= ARTISTA =========
+	
+	      if (artist === targetArtist) {
+	        score += 10000;
+	      } else if (artist.startsWith(targetArtist)) {
+	        score += 5000;
+	      } else if (artist.includes(targetArtist)) {
+	        score += 1000;
+	      }
+	
+	      // ========= TITULO =========
+	
+	      if (title === targetTitle) {
+	        score += 10000;
+	      } else if (title.startsWith(targetTitle)) {
+	        score += 3000;
+	      } else if (title.includes(targetTitle)) {
+	        score += 1000;
+	      }
+	
+	      // ========= PENALIZACIONES =========
+	
+	      const penalties = [
+	        "remix",
+	        "live",
+	        "karaoke",
+	        "instrumental",
+	        "tribute",
+	        "cover",
+	        "radio edit",
+	        "extended",
+	        "club mix",
+	        "acoustic"
+	      ];
+	
+	      for (const p of penalties) {
+	        if (title.includes(p)) {
+	          score -= 4000;
+	        }
+	      }
+	
+	      // Castigar featurings
+	      if (
+	        title.includes("feat") ||
+	        title.includes("featuring")
+	      ) {
+	        score -= 3000;
+	      }
+	
+	      // Si el artista buscado aparece solo dentro del título,
+	      // probablemente es un featuring y no la canción original
+	      if (
+	        artist !== targetArtist &&
+	        title.includes(targetArtist)
+	      ) {
+	        score -= 5000;
+	      }
+	
+	      // Bonus por año aproximado
+	      if (song.year && track.releaseDate) {
+	        const trackYear = new Date(track.releaseDate).getFullYear();
+	
+	        if (trackYear === song.year) {
+	          score += 1500;
+	        } else if (Math.abs(trackYear - song.year) <= 1) {
+	          score += 500;
+	        }
+	      }
+	
+	      if (score > bestScore) {
+	        bestScore = score;
+	        bestTrack = track;
+	      }
+	    }
+	
+	    return bestTrack;
+	  }
+	
 	  try {
-		const query = encodeURIComponent(`${data.author} ${data.title}`);
-
-		const res = await fetch(
-		  `https://itunes.apple.com/search?term=${query}&entity=song&limit=25`
-		);
-
-		const json = await res.json();
-
-		if (!json.results?.length) {
-		  throw new Error("Sin resultados");
-		}
-
-		const targetArtist = normalize(data.author);
-		const targetTitle = normalize(data.title);
-
-		// 1. Coincidencia exacta artista + título
-		let track = json.results.find((r) => {
-		  const artist = normalize(r.artistName);
-		  const title = normalize(r.trackName);
-
-		  return artist === targetArtist && title === targetTitle;
-		});
-
-		// 2. Coincidencia parcial artista + título
-		if (!track) {
-		  track = json.results.find((r) => {
-			const artist = normalize(r.artistName);
-			const title = normalize(r.trackName);
-
-			return (
-			  artist.includes(targetArtist) &&
-			  title.includes(targetTitle)
-			);
-		  });
-		}
-
-		// 3. Coincidencia por título
-		if (!track) {
-		  track = json.results.find((r) => {
-			const title = normalize(r.trackName);
-			return title.includes(targetTitle);
-		  });
-		}
-
-		// 4. Coincidencia por artista
-		if (!track) {
-		  track = json.results.find((r) => {
-			const artist = normalize(r.artistName);
-			return artist.includes(targetArtist);
-		  });
-		}
-
-		// 5. Último recurso
-		if (!track) {
-		  track = json.results[0];
-		}
-
-		if (!track?.previewUrl) {
-		  console.warn(
-			"Resultado encontrado pero sin preview:",
-			track
-		  );
-
-		  if (btn) {
-			btn.style.background = "rgba(239, 68, 68, 0.5)";
-		  }
-
-		  return;
-		}
-
-		if (stopTimeout) {
-		  clearTimeout(stopTimeout);
-		}
-
-		// Detener reproducción anterior
-		player.pause();
-
-		if (player.src === track.previewUrl) {
-		  player.currentTime = Math.random() * 10;
-		} else {
-		  player.src = track.previewUrl;
-		}
-
-		await player.play().catch((e) => {
-		  console.warn("Error al reproducir:", e);
-		});
-
-		console.log(
-		  `Encontrada: ${track.artistName} - ${track.trackName}`
-		);
-
-		stopTimeout = setTimeout(() => {
-		  player.pause();
-
-		  if (btn) {
-			btn.style.background = "";
-		  }
-
-		  stopPlayingAnimation();
-		}, 20000);
-
+	    const query = encodeURIComponent(
+	      `${data.author} ${data.title}`
+	    );
+	
+	    const res = await fetch(
+	      `https://itunes.apple.com/search?term=${query}&entity=song&limit=25`
+	    );
+	
+	    const json = await res.json();
+	
+	    if (!json.results?.length) {
+	      throw new Error("No hay resultados");
+	    }
+	
+	    const track = getBestTrack(json.results, data);
+	
+	    if (!track?.previewUrl) {
+	      throw new Error("No hay preview");
+	    }
+	
+	    console.log(
+	      `Encontrada: ${track.artistName} - ${track.trackName}`
+	    );
+	
+	    if (stopTimeout) {
+	      clearTimeout(stopTimeout);
+	    }
+	
+	    player.pause();
+	
+	    if (player.src === track.previewUrl) {
+	      player.currentTime = Math.random() * 10;
+	    } else {
+	      player.src = track.previewUrl;
+	    }
+	
+	    await player.play();
+	
+	    stopTimeout = setTimeout(() => {
+	      player.pause();
+	
+	      if (btn) {
+	        btn.style.background = "";
+	      }
+	
+	      stopPlayingAnimation();
+	    }, 20000);
+	
 	  } catch (e) {
-		console.warn(
-		  `No se encontró "${data.title}" de "${data.author}"`,
-		  e
-		);
-
-		if (btn) {
-		  btn.style.background = "rgba(239, 68, 68, 0.5)";
-		}
+	    console.error("Error audio:", e);
+	
+	    if (btn) {
+	      btn.style.background = "rgba(239,68,68,.5)";
+	    }
 	  }
 	}
-
   function stopSong(card) {
     player.pause();
     const playBtn = (card && card.querySelector(".play")) || document.getElementById("popup-play");
