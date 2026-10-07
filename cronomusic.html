@@ -1408,46 +1408,140 @@
   }
 
   async function playSong(data, btn) {
-    if (btn) btn.style.background = "var(--accent)";
-    // Si estamos en el popup y la carta ya está revelada, paramos la animación
-    const popupOverlay = document.getElementById("card-popup-overlay");
-    if (popupOverlay.classList.contains("active")) {
-      const content = document.getElementById("popup-content");
-      const cardView = content.querySelector(".popup-card-view");
-      if (cardView && cardView.classList.contains("front-view")) {
-        stopPlayingAnimation();
-      }
-    }
-    
-    try {
-      const query = encodeURIComponent(`${data.author} ${data.title}`);
-      const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
-      const json = await res.json();
-      if(json.results[0]) {
-        if(stopTimeout) clearTimeout(stopTimeout);
-        
-        // Detener reproducciones anteriores
-        player.pause();
+	  if (btn) btn.style.background = "var(--accent)";
 
-        // Si ya hay un src y es el mismo, intentamos saltar a un punto aleatorio
-        if (player.src === json.results[0].previewUrl) {
-          player.currentTime = Math.random() * 10;
-        } else {
-          player.src = json.results[0].previewUrl;
-        }
-        
-        player.play().catch(e => console.warn("Error al auto-reproducir:", e));
-        stopTimeout = setTimeout(() => {
-          player.pause();
-          if(btn) btn.style.background = "";
-          stopPlayingAnimation();
-        }, 20000);
-      } else {
-        console.warn("No se encontró la canción en iTunes:", data.author, data.title);
-        if(btn) btn.style.background = "rgba(239, 68, 68, 0.5)"; // Rojo suave si no se encuentra
-      }
-    } catch(e) { console.error("Error audio", e); }
-  }
+	  // Si estamos viendo la carta boca arriba, detener animación
+	  const popupOverlay = document.getElementById("card-popup-overlay");
+	  if (popupOverlay.classList.contains("active")) {
+		const content = document.getElementById("popup-content");
+		const cardView = content.querySelector(".popup-card-view");
+
+		if (cardView?.classList.contains("front-view")) {
+		  stopPlayingAnimation();
+		}
+	  }
+
+	  const normalize = (str) =>
+		(str || "")
+		  .toLowerCase()
+		  .normalize("NFD")
+		  .replace(/[\u0300-\u036f]/g, "")
+		  .replace(/[^\w\s]/g, "")
+		  .trim();
+
+	  try {
+		const query = encodeURIComponent(`${data.author} ${data.title}`);
+
+		const res = await fetch(
+		  `https://itunes.apple.com/search?term=${query}&entity=song&limit=25`
+		);
+
+		const json = await res.json();
+
+		if (!json.results?.length) {
+		  throw new Error("Sin resultados");
+		}
+
+		const targetArtist = normalize(data.author);
+		const targetTitle = normalize(data.title);
+
+		// 1. Coincidencia exacta artista + título
+		let track = json.results.find((r) => {
+		  const artist = normalize(r.artistName);
+		  const title = normalize(r.trackName);
+
+		  return artist === targetArtist && title === targetTitle;
+		});
+
+		// 2. Coincidencia parcial artista + título
+		if (!track) {
+		  track = json.results.find((r) => {
+			const artist = normalize(r.artistName);
+			const title = normalize(r.trackName);
+
+			return (
+			  artist.includes(targetArtist) &&
+			  title.includes(targetTitle)
+			);
+		  });
+		}
+
+		// 3. Coincidencia por título
+		if (!track) {
+		  track = json.results.find((r) => {
+			const title = normalize(r.trackName);
+			return title.includes(targetTitle);
+		  });
+		}
+
+		// 4. Coincidencia por artista
+		if (!track) {
+		  track = json.results.find((r) => {
+			const artist = normalize(r.artistName);
+			return artist.includes(targetArtist);
+		  });
+		}
+
+		// 5. Último recurso
+		if (!track) {
+		  track = json.results[0];
+		}
+
+		if (!track?.previewUrl) {
+		  console.warn(
+			"Resultado encontrado pero sin preview:",
+			track
+		  );
+
+		  if (btn) {
+			btn.style.background = "rgba(239, 68, 68, 0.5)";
+		  }
+
+		  return;
+		}
+
+		if (stopTimeout) {
+		  clearTimeout(stopTimeout);
+		}
+
+		// Detener reproducción anterior
+		player.pause();
+
+		if (player.src === track.previewUrl) {
+		  player.currentTime = Math.random() * 10;
+		} else {
+		  player.src = track.previewUrl;
+		}
+
+		await player.play().catch((e) => {
+		  console.warn("Error al reproducir:", e);
+		});
+
+		console.log(
+		  `Encontrada: ${track.artistName} - ${track.trackName}`
+		);
+
+		stopTimeout = setTimeout(() => {
+		  player.pause();
+
+		  if (btn) {
+			btn.style.background = "";
+		  }
+
+		  stopPlayingAnimation();
+		}, 20000);
+
+	  } catch (e) {
+		console.warn(
+		  `No se encontró "${data.title}" de "${data.author}"`,
+		  e
+		);
+
+		if (btn) {
+		  btn.style.background = "rgba(239, 68, 68, 0.5)";
+		}
+	  }
+	}
 
   function stopSong(card) {
     player.pause();
