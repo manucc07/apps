@@ -1408,118 +1408,216 @@
   }
 
   async function playSong(data, btn) {
-	  if (btn) btn.style.background = "var(--accent)";
-	
-	  const popupOverlay = document.getElementById("card-popup-overlay");
-	  if (popupOverlay.classList.contains("active")) {
-	    const content = document.getElementById("popup-content");
-	    const cardView = content.querySelector(".popup-card-view");
-	
-	    if (cardView?.classList.contains("front-view")) {
-	      stopPlayingAnimation();
-	    }
-	  }
-	
-	  function normalize(str) {
-	    return (str || "")
-	      .toLowerCase()
-	      .normalize("NFD")
-	      .replace(/[\u0300-\u036f]/g, "")
-	      .replace(/[^\w\s]/g, " ")
-	      .replace(/\s+/g, " ")
-	      .trim();
-	  }
-	
-	  function getBestTrack(results, song) {
+  if (btn) btn.style.background = "var(--accent)";
+
+  const popupOverlay = document.getElementById("card-popup-overlay");
+
+  if (popupOverlay.classList.contains("active")) {
+    const content = document.getElementById("popup-content");
+    const cardView = content.querySelector(".popup-card-view");
+
+    if (cardView?.classList.contains("front-view")) {
+      stopPlayingAnimation();
+    }
+  }
+
+  // ============================================================
+  // NORMALIZACIÓN
+  // ============================================================
+
+  function normalize(str) {
+    return (str || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  // Convierte cosas como:
+  // "feat.", "ft.", "featuring" -> feat
+  function normalizeFeatures(str) {
+    return normalize(str)
+      .replace(/\bfeaturing\b/g, "feat")
+      .replace(/\bfeat\b/g, "feat")
+      .replace(/\bft\b/g, "feat");
+  }
+
+  // ============================================================
+  // PALABRAS QUE INDICAN QUE NO ES LA VERSIÓN ORIGINAL
+  // ============================================================
+
+  const unwantedVersions = [
+    "remix",
+    "live",
+    "karaoke",
+    "instrumental",
+    "tribute",
+    "cover",
+    "acoustic",
+    "extended",
+    "club mix",
+    "radio edit",
+    "edit",
+    "mix",
+    "version",
+    "remaster",
+    "remastered",
+    "re-recorded",
+    "re recorded",
+    "2020 remaster",
+    "2021 remaster",
+    "2022 remaster",
+    "2023 remaster",
+    "2024 remaster",
+    "2025 remaster",
+    "2026 remaster"
+  ];
+
+  function isUnwantedVersion(track) {
+    const title = normalize(track.trackName);
+    const artist = normalizeFeatures(track.artistName);
+
+    return unwantedVersions.some(word => {
+      return title.includes(word) || artist.includes(word);
+    });
+  }
+
+  // ============================================================
+  // DETECTAR FEATURING
+  // ============================================================
+
+  function hasFeaturing(track) {
+    const title = normalizeFeatures(track.trackName);
+    const artist = normalizeFeatures(track.artistName);
+
+    return (
+      title.includes(" feat ") ||
+      title.includes(" featuring ") ||
+      artist.includes(" feat ") ||
+      artist.includes(" featuring ")
+    );
+  }
+
+  // ============================================================
+  // CALCULAR MEJOR RESULTADO
+  // ============================================================
+
+  function getBestTrack(results, song) {
 	    const targetArtist = normalize(song.author);
 	    const targetTitle = normalize(song.title);
 	
-	    let bestTrack = null;
-	    let bestScore = -Infinity;
+	    const candidates = [];
 	
 	    for (const track of results) {
+	      if (!track.previewUrl) continue;
+	
 	      const artist = normalize(track.artistName);
 	      const title = normalize(track.trackName);
 	
+	      const artistExact = artist === targetArtist;
+	      const titleExact = title === targetTitle;
+	
+	      // --------------------------------------------------------
+	      // DESCARTAR VERSIONES QUE SABEMOS QUE NO QUEREMOS
+	      // --------------------------------------------------------
+	
+	      if (isUnwantedVersion(track)) {
+	        continue;
+	      }
+	
+	      // Si tiene featuring explícito, tampoco lo queremos
+	      if (hasFeaturing(track)) {
+	        continue;
+	      }
+	
+	      // --------------------------------------------------------
+	      // PUNTUACIÓN
+	      // --------------------------------------------------------
+	
 	      let score = 0;
 	
-	      // ========= ARTISTA =========
+	      // ================= ARTISTA =================
 	
-	      if (artist === targetArtist) {
-	        score += 10000;
+	      if (artistExact) {
+	        score += 100000;
 	      } else if (artist.startsWith(targetArtist)) {
-	        score += 5000;
+	        score += 30000;
 	      } else if (artist.includes(targetArtist)) {
-	        score += 1000;
-	      }
-	
-	      // ========= TITULO =========
-	
-	      if (title === targetTitle) {
 	        score += 10000;
+	      } else {
+	        // Si ni siquiera aparece el artista, penalización fuerte
+	        score -= 20000;
+	      }
+	
+	      // ================= TÍTULO =================
+	
+	      if (titleExact) {
+	        score += 100000;
 	      } else if (title.startsWith(targetTitle)) {
-	        score += 3000;
+	        score += 30000;
 	      } else if (title.includes(targetTitle)) {
-	        score += 1000;
+	        score += 10000;
+	      } else {
+	        score -= 20000;
 	      }
 	
-	      // ========= PENALIZACIONES =========
+	      // ================= AÑO =================
 	
-	      const penalties = [
-	        "remix",
-	        "live",
-	        "karaoke",
-	        "instrumental",
-	        "tribute",
-	        "cover",
-	        "radio edit",
-	        "extended",
-	        "club mix",
-	        "acoustic"
-	      ];
-	
-	      for (const p of penalties) {
-	        if (title.includes(p)) {
-	          score -= 4000;
-	        }
-	      }
-	
-	      // Castigar featurings
-	      if (
-	        title.includes("feat") ||
-	        title.includes("featuring")
-	      ) {
-	        score -= 3000;
-	      }
-	
-	      // Si el artista buscado aparece solo dentro del título,
-	      // probablemente es un featuring y no la canción original
-	      if (
-	        artist !== targetArtist &&
-	        title.includes(targetArtist)
-	      ) {
-	        score -= 5000;
-	      }
-	
-	      // Bonus por año aproximado
 	      if (song.year && track.releaseDate) {
 	        const trackYear = new Date(track.releaseDate).getFullYear();
 	
-	        if (trackYear === song.year) {
-	          score += 1500;
-	        } else if (Math.abs(trackYear - song.year) <= 1) {
-	          score += 500;
+	        if (trackYear === Number(song.year)) {
+	          score += 20000;
+	        } else if (Math.abs(trackYear - Number(song.year)) === 1) {
+	          score += 5000;
+	        } else {
+	          score -= Math.min(
+	            Math.abs(trackYear - Number(song.year)) * 500,
+	            5000
+	          );
 	        }
 	      }
 	
-	      if (score > bestScore) {
-	        bestScore = score;
-	        bestTrack = track;
+	      // ========================================================
+	      // BONUS ESPECIAL: ORIGINAL EXACTA
+	      // ========================================================
+	
+	      if (artistExact && titleExact) {
+	        score += 500000;
 	      }
+	
+	      candidates.push({
+	        track,
+	        score
+	      });
 	    }
 	
-	    return bestTrack;
+	    // Ordenar de mejor a peor
+	    candidates.sort((a, b) => b.score - a.score);
+	
+	    if (!candidates.length) {
+	      return null;
+	    }
+	
+	    console.table(
+	      candidates.slice(0, 10).map(c => ({
+	        score: c.score,
+	        artist: c.track.artistName,
+	        title: c.track.trackName,
+	        year: c.track.releaseDate
+	          ? new Date(c.track.releaseDate).getFullYear()
+	          : null
+	      }))
+	    );
+	
+	    return candidates[0].track;
 	  }
+	
+	  // ============================================================
+	  // BUSCAR
+	  // ============================================================
 	
 	  try {
 	    const query = encodeURIComponent(
@@ -1527,7 +1625,7 @@
 	    );
 	
 	    const res = await fetch(
-	      `https://itunes.apple.com/search?term=${query}&entity=song&limit=25`
+	      `https://itunes.apple.com/search?term=${query}&entity=song&limit=50`
 	    );
 	
 	    const json = await res.json();
