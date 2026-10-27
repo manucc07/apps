@@ -15,6 +15,10 @@
     {
       "source": "/hilados",
       "destination": "/hilados.html"
+    },
+    {
+      "source": "/misiones",
+      "destination": "/misiones_movil.html"
     }
   ]
 }
