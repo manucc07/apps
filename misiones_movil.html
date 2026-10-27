@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>Misiones Secretas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{color-scheme:dark;--bg:#0f172a;--panel:rgba(255,255,255,.055);--panel2:rgba(255,255,255,.085);--border:rgba(255,255,255,.12);--text:#f1f5f9;--muted:#9caec5;--cyan:#38bdf8;--purple:#a78bfa;--green:#4ade80;--amber:#fbbf24;--red:#fb7185}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;padding:12px 10px calc(28px + env(safe-area-inset-bottom));font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text);background:radial-gradient(ellipse at 0 0,rgba(56,189,248,.13),transparent 45%),radial-gradient(ellipse at 100% 0,rgba(167,139,250,.13),transparent 42%),var(--bg)}
+    button,input,select,textarea{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.45;cursor:not-allowed}input,select,textarea{width:100%;min-width:0;color:var(--text);background:rgba(2,6,23,.62);border:1px solid var(--border);border-radius:13px;padding:13px;font-size:16px;outline:none}input:focus,select:focus,textarea:focus{border-color:rgba(56,189,248,.8);box-shadow:0 0 0 3px rgba(56,189,248,.1)}textarea{resize:vertical;line-height:1.5}select option{background:#111827}.app{max-width:760px;margin:0 auto}.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 2px 20px}.back{color:var(--muted);font-size:.85rem;text-decoration:none;white-space:nowrap}.brand{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:800;letter-spacing:-.02em}.brand-icon{display:grid;place-items:center;width:35px;height:35px;border-radius:12px;background:linear-gradient(135deg,var(--cyan),var(--purple));font-size:1.2rem}.hero{text-align:center;margin:18px auto 22px}.eyebrow{font-size:.7rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--cyan)}h1{font-size:clamp(2.15rem,9vw,3.3rem);line-height:1.04;letter-spacing:-.065em;margin:9px 0 12px}.gradient{background:linear-gradient(90deg,var(--cyan),#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent}.hero p{max-width:540px;margin:0 auto;color:var(--muted);font-size:.92rem;line-height:1.6}.panel,.card{border:1px solid var(--border);border-radius:20px;background:var(--panel);backdrop-filter:blur(12px)}.panel{padding:16px;margin-bottom:14px}.panel h2{margin:0 0 5px;font-size:1.13rem;letter-spacing:-.035em}.sub{margin:0 0 15px;color:var(--muted);font-size:.84rem;line-height:1.55}.switcher{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}.switch{border:1px solid var(--border);border-radius:13px;padding:12px 8px;background:rgba(255,255,255,.035);color:var(--muted);font-weight:800;font-size:.86rem}.switch.active{color:#e0f2fe;background:rgba(56,189,248,.13);border-color:rgba(56,189,248,.42)}.field{display:flex;flex-direction:column;gap:7px;min-width:0}.field label,.label{font-size:.82rem;font-weight:700;color:#d7e2f0}.field small,.help{font-size:.75rem;line-height:1.45;color:var(--muted)}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1;min-width:0}.btn{min-height:46px;border:1px solid var(--border);border-radius:13px;background:rgba(255,255,255,.065);color:var(--text);font-weight:800;font-size:.88rem;padding:12px 14px}.btn:active{transform:scale(.985)}.btn.primary{border:0;color:#071321;background:linear-gradient(100deg,var(--cyan),#c4b5fd)}.btn.ghost{background:transparent}.btn.danger{color:#fecdd3;border-color:rgba(251,113,133,.3)}.btn.full{width:100%}.btn.small{min-height:40px;padding:9px 11px;font-size:.8rem}.name-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.name-entry{display:flex;align-items:center;gap:7px;min-width:0}.name-entry .num{color:var(--muted);font-size:.73rem;width:17px;flex-shrink:0;text-align:right}.name-entry input{padding:11px 10px;min-width:0}.section-line{height:1px;background:var(--border);margin:16px 0}.button-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.button-row .btn{flex:1}.notice{border:1px solid rgba(251,191,36,.25);border-radius:13px;background:rgba(251,191,36,.06);color:#fde68a;padding:11px 12px;font-size:.76rem;line-height:1.5;margin-top:14px}.info{border:1px solid rgba(56,189,248,.2);border-radius:13px;background:rgba(56,189,248,.055);color:#c8edff;padding:11px 12px;font-size:.8rem;line-height:1.5;margin:12px 0}.status{font-size:.82rem;line-height:1.45;margin-top:10px}.error{color:#fecdd3}.success{color:#bbf7d0}.count{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:3px 8px;border-radius:999px;border:1px solid var(--border);color:#c4b5fd;font-size:.72rem;font-weight:800}.code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;overflow-wrap:anywhere;min-height:100px}.details{border:1px solid var(--border);border-radius:15px;margin-top:14px;overflow:hidden}.details summary{font-size:.85rem;font-weight:800;padding:14px;cursor:pointer;background:rgba(255,255,255,.035)}.details-inner{padding:12px}.details textarea{min-height:250px;font-size:.82rem}.ready-actions{display:grid;grid-template-columns:1fr;gap:12px}.player-select{margin-top:14px}.game-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.game-head h1{font-size:clamp(1.7rem,7vw,2.5rem);margin:5px 0 5px}.meta{color:var(--muted);font-size:.78rem;line-height:1.5}.timer{flex:0 0 112px;text-align:center;padding:12px 9px;border:1px solid rgba(56,189,248,.3);border-radius:17px;background:rgba(56,189,248,.07)}.timer-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;font-weight:800;color:var(--muted)}.time{font-size:1.65rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.06em;margin-top:3px}.time.urgent{color:var(--red)}.track{height:5px;border-radius:100px;background:rgba(255,255,255,.09);overflow:hidden;margin:8px 0 17px}.track>div{height:100%;width:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width .4s linear}.mission{border:1px solid rgba(167,139,250,.34);border-radius:20px;padding:18px;background:linear-gradient(135deg,rgba(56,189,248,.095),rgba(167,139,250,.12));margin-bottom:20px}.mission-kicker{color:#c4b5fd;font-size:.7rem;text-transform:uppercase;letter-spacing:.13em;font-weight:800}.mission-text{font-size:clamp(1.18rem,5vw,1.65rem);font-weight:800;line-height:1.42;letter-spacing:-.035em;margin:10px 0 0}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:22px 0 10px}.section-head h2{margin:0;font-size:1.16rem;letter-spacing:-.03em}.section-head p{margin:4px 0 0;color:var(--muted);font-size:.78rem;line-height:1.45}.note-list{display:grid;grid-template-columns:1fr;gap:10px}.note-card{border:1px solid var(--border);border-radius:17px;padding:13px;background:rgba(255,255,255,.035)}.note-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.note-card h3{font-size:.97rem;margin:0;overflow-wrap:anywhere}.note-card .hint{font-size:.7rem;color:var(--muted)}.note-card textarea{min-height:82px;padding:11px;font-size:.92rem}.saved{color:var(--green);font-size:.7rem;white-space:nowrap}.mission-list{display:grid;gap:9px;margin-top:12px}.mission-reveal{border:1px solid var(--border);border-radius:13px;padding:12px;background:rgba(255,255,255,.035)}.mission-reveal strong{display:block;font-size:.84rem;margin-bottom:4px}.mission-reveal p{margin:0;font-size:.82rem;line-height:1.5;color:#d8e4f1}.footer{text-align:center;color:var(--muted);font-size:.72rem;line-height:1.55;margin:20px 4px}.hidden{display:none!important}@media(min-width:620px){body{padding:20px 16px 35px}.panel{padding:22px}.note-list{grid-template-columns:1fr 1fr}.ready-actions{grid-template-columns:1.2fr .8fr}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <a href="/" class="back">← Mis aplicaciones</a>
+    <div class="brand"><span class="brand-icon">🎭</span><span>MISIONES SECRETAS</span></div>
+  </header>
+
+  <main id="setupView">
+    <section class="hero">
+      <div class="eyebrow">Juego de cumpleaños · 20–30 min</div>
+      <h1>Haz tu misión.<br><span class="gradient">No te delates.</span></h1>
+      <p>Cada persona recibe una misión absurda. Intenta cumplirla sin levantar sospechas y escribe qué crees que están haciendo los demás. Al final reveláis las misiones y comparáis las notas.</p>
+    </section>
+
+    <div class="switcher" aria-label="Modo">
+      <button type="button" class="switch active" id="showCreateBtn">➕ Crear partida</button>
+      <button type="button" class="switch" id="showImportBtn">📥 Unirme con código</button>
+    </div>
+
+    <section class="panel" id="createPanel">
+      <h2>Preparar partida</h2>
+      <p class="sub">Añade o quita jugadores. Cada participante recibirá una misión distinta elegida al azar.</p>
+      <div class="field">
+        <label for="durationSelect">Duración</label>
+        <select id="durationSelect"><option value="20">20 minutos</option><option value="25">25 minutos</option><option value="30" selected>30 minutos</option></select>
+      </div>
+      <div class="section-line"></div>
+      <div class="section-head" style="margin-top:0">
+        <div><h2>Jugadores</h2><p>Escribe los nombres y añade o quita filas.</p></div>
+        <span class="count" id="playerCount">9</span>
+      </div>
+      <div class="name-list" id="nameList"></div>
+      <div class="button-row">
+        <button class="btn" id="addPlayerBtn" type="button">＋ Añadir</button>
+        <button class="btn ghost" id="removePlayerBtn" type="button">− Quitar último</button>
+      </div>
+
+      <details class="details">
+        <summary>📝 Editar lista de misiones <span class="count" id="missionCount">—</span></summary>
+        <div class="details-inner">
+          <p class="sub">Una misión por línea. Puedes editar, borrar o añadir misiones aquí. Para crear una partida debe haber al menos tantas misiones como jugadores; se elegirán sin repetir.</p>
+          <div class="field"><label for="missionEditor">Catálogo editable</label><textarea id="missionEditor" autocapitalize="sentences" spellcheck="true"></textarea><small id="missionEditorHelp">Los cambios solo afectan a las partidas nuevas que crees desde este móvil.</small></div>
+          <div class="button-row"><button class="btn small" id="restoreMissionsBtn" type="button">Restaurar lista inicial</button><button class="btn small" id="saveMissionsBtn" type="button">Guardar lista en este móvil</button></div>
+        </div>
+      </details>
+
+      <div class="notice">Esta app no usa servidor. El código comparte participantes y misiones, pero Base64 no las cifra: está pensado para un juego informal, no para mantener secretos frente a alguien que inspeccione el código.</div>
+      <div class="button-row"><button class="btn primary full" id="createBtn" type="button">🎲 Asignar misiones y crear código</button></div>
+      <div id="createStatus" class="status" role="status"></div>
+    </section>
+
+    <section class="panel hidden" id="importPanel">
+      <h2>Unirse a una partida</h2>
+      <p class="sub">Pega el código que te ha enviado quien creó la partida. Después selecciona tu nombre para abrir tu bloc.</p>
+      <div class="field"><label for="importCode">Código de partida</label><textarea id="importCode" class="code" placeholder="Pega aquí el código Base64…" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea></div>
+      <div class="button-row"><button class="btn primary full" id="loadCodeBtn" type="button">Cargar partida →</button></div>
+      <div id="importStatus" class="status" role="status"></div>
+    </section>
+
+    <section class="panel hidden" id="readyPanel">
+      <h2>Partida preparada</h2>
+      <p class="sub" id="readySummary">Copia el código y envíalo a todos los jugadores.</p>
+      <div class="field"><label for="shareCode">Código para compartir</label><textarea id="shareCode" class="code" readonly spellcheck="false"></textarea></div>
+      <div class="button-row"><button class="btn primary" type="button" id="copyCodeBtn">📋 Copiar código</button><button class="btn" type="button" id="backToSetupBtn">Volver</button></div>
+      <div class="field player-select"><label for="identitySelect">¿Quién eres?</label><select id="identitySelect"></select></div>
+      <div class="button-row"><button class="btn primary full" type="button" id="enterGameBtn">Abrir mi bloc de notas →</button></div>
+      <div id="identityStatus" class="status" role="status"></div>
+    </section>
+  </main>
+
+  <main id="gameView" class="hidden">
+    <div class="game-head">
+      <div>
+        <div class="eyebrow">Tu espacio privado</div>
+        <h1>Hola, <span class="gradient" id="playerNameTitle">jugador</span></h1>
+        <div class="meta" id="gameMeta"></div>
+      </div>
+      <div class="timer"><div class="timer-label">Tiempo restante</div><div class="time" id="timerDisplay">30:00</div></div>
+    </div>
+    <div class="track"><div id="timerProgress"></div></div>
+
+    <section class="mission">
+      <div class="mission-kicker">🔒 Tu misión secreta</div>
+      <div id="myMissionText" class="mission-text"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div><h2>Tu bloc de sospechas</h2><p>Escribe libremente qué crees que intenta hacer cada persona. Se guarda automáticamente en este móvil.</p></div>
+      </div>
+      <div id="noteList" class="note-list"></div>
+    </section>
+
+    <section class="panel" style="margin-top:18px">
+      <h2>¿Se acabó el tiempo?</h2>
+      <p class="sub">Cuando estéis listos para resolver, revelad las misiones y comparadlas con lo que cada persona escribió. La aplicación no juzga si la respuesta es correcta: lo decidís vosotros.</p>
+      <button class="btn primary full" id="revealBtn" type="button" disabled>👀 Revelar todas las misiones (al terminar)</button>
+      <div id="revealList" class="mission-list hidden"></div>
+      <div class="button-row"><button class="btn full" id="copyNotesBtn" type="button">📋 Copiar mis notas</button><button class="btn ghost full" id="changeGameBtn" type="button">Cambiar de partida</button></div>
+      <div id="gameStatus" class="status" role="status"></div>
+    </section>
+  </main>
+
+  <p class="footer">Las notas se guardan solo en este dispositivo y no se sincronizan con el resto. Para lanzar cosas, utilizad únicamente objetos blandos y nunca apuntéis a la cara. La misión de Atenea se hace solo si sus padres están de acuerdo y ella está cómoda.</p>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ═══════════════════════════════════════════════════════════════
+  // CATÁLOGO DE MISIONES: edítalo aquí o desde «Editar lista de misiones».
+  // Añade una misión por línea. Para una partida, hacen falta tantas
+  // misiones como jugadores; las misiones asignadas no se repiten.
+  // ═══════════════════════════════════════════════════════════════
+  const DEFAULT_MISSIONS = [
+    'Echarte 4 vasos de agua y tener cada uno en la mano durante 1 minuto; después, tirar el agua o bebértela.',
+    'Recolectar comida sin que te vean (en plan intentar conseguir un trozo de comida de cada plato).',
+    'Cantarle 4 canciones a Atenea (el bebé), con 2 minutos de separación entre ellas.',
+    'Que se te caiga un trozo de comida 10 veces.',
+    'Oler 3 bebidas distintas antes de probarlas y hacer una valoración exageradamente seria de cada una.',
+    'Ir al baño 4 veces, con 1 minuto mínimo de diferencia entre ellas.',
+    'Beber de 3 vasos que no son tuyos.',
+    'Lanzarle algo a alguien 4 veces.',
+    'Hacer 5 viajes a la cocina, llevando solamente una cosa cada vez.',
+    'Mantener una servilleta sobre la cabeza durante 1 minuto mientras mantienes una conversación.',
+    'Construir una torre de 6 vasos de plástico, desmontarla y volver a montarla 3 veces.',
+    'Cambiar de asiento 4 veces durante la partida sin anunciar que estás cambiando de sitio.',
+    'Llevar una cuchara como si fuera un micrófono y hacer 3 anuncios solemnes de al menos 10 segundos.',
+    'Mover el mismo cojín a 4 lugares diferentes de la casa, dejando al menos 1 minuto entre cada movimiento.',
+    'Hacer una reverencia exagerada al entrar en una habitación, 4 veces.',
+    'Mantener una cuchara en equilibrio sobre una mano durante 30 segundos, 3 veces a lo largo de la partida.',
+    'Colocar 5 objetos pequeños en línea recta sobre una mesa y, al menos 3 minutos después, ordenarlos en círculo.',
+    'Hacer 3 brindis con 3 personas distintas, dejando al menos 2 minutos entre cada brindis. Puede ser con cualquier bebida.',
+    'Hacer 5 viajes a la cocina llevando un vaso vacío cada vez.',
+    'Doblar 6 servilletas y colocarlas en distintos lugares de la casa.',
+    'Llevar un cojín contigo durante 5 minutos como si fuera algo importante.',
+    'Poner una servilleta sobre un hombro y mantenerla ahí durante 3 minutos mientras haces otras cosas.',
+    'Construir una torre con 5 objetos domésticos distintos y mantenerla en pie durante 1 minuto.',
+    'Cambiarte una prenda o accesorio de sitio 3 veces durante la partida (por ejemplo, ponerte y quitarte una chaqueta).',
+    'Hacer una mini pasarela de 10 segundos llevando un objeto doméstico como accesorio, en 3 ocasiones diferentes.',
+    'Colocar 3 vasos vacíos en fila, cambiarles el orden y repetirlo 3 veces durante la partida.',
+    'Sostener una cuchara como si fuera una medalla y enseñársela con solemnidad a 4 personas.',
+    'Mover una silla unos centímetros, volver a colocarla como estaba y repetirlo 4 veces.',
+    'Llevar una servilleta doblada en el bolsillo durante al menos 10 minutos y luego dejarla cuidadosamente sobre una mesa.',
+    'Hacer 3 estiramientos exageradamente serios, dejando al menos 2 minutos entre cada uno.',
+    'Coger un objeto cotidiano, mirarlo como si fuera muy misterioso durante 10 segundos y dejarlo en otro sitio. Hazlo 4 veces con objetos distintos.',
+    'Ordenar 5 cubiertos sobre la mesa por tamaño y, unos minutos después, volver a mezclarlos discretamente.'
+  ];
+
+  const SESSION_TYPE = 'misiones-secretas-session-v2';
+  const VERSION = 2;
+  const $ = id => document.getElementById(id);
+  let playerEntries = [];
+  let pendingSession = null;
+  let currentSession = null;
+  let currentPlayerId = null;
+  let timerInterval = null;
+  let revealShown = false;
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+  function encodeBase64Url(value) {
+    const bytes = new TextEncoder().encode(JSON.stringify(value));
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + 0x8000, bytes.length)));
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  }
+  function decodeBase64Url(code) {
+    const clean = String(code || '').replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+    if (!clean) throw new Error('Pega primero el código de la partida.');
+    const binary = atob(clean + '='.repeat((4 - clean.length % 4) % 4));
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+  function shuffle(items) {
+    const result = items.slice();
+    for (let i = result.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [result[i], result[j]] = [result[j], result[i]]; }
+    return result;
+  }
+  function makeId() { return (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2))); }
+  function missionsFromEditor() {
+    return $('missionEditor').value.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  }
+  function saveCustomMissions() {
+    try { localStorage.setItem('misiones-secretas:custom-missions', $('missionEditor').value); } catch (_) {}
+    updateMissionCount();
+  }
+  function updateMissionCount() {
+    const missions = missionsFromEditor();
+    $('missionCount').textContent = `${missions.length} misiones`;
+    $('missionEditorHelp').textContent = `${missions.length} misiones disponibles. Una por línea; las líneas vacías se ignoran.`;
+  }
+  function addPlayer(name = '') {
+    if (playerEntries.length >= 40) return;
+    const id = makeId();
+    playerEntries.push({id, name});
+    renderPlayers();
+  }
+  function removePlayer() {
+    if (playerEntries.length <= 2) { $('createStatus').textContent = 'La partida necesita al menos 2 jugadores.'; $('createStatus').className = 'status error'; return; }
+    playerEntries.pop();
+    renderPlayers();
+  }
+  function renderPlayers() {
+    $('nameList').innerHTML = playerEntries.map((p, i) => `<div class="name-entry"><span class="num">${i + 1}.</span><input type="text" data-player-id="${escapeHtml(p.id)}" maxlength="40" autocomplete="off" autocapitalize="words" aria-label="Nombre del jugador ${i + 1}" placeholder="Nombre ${i + 1}" value="${escapeHtml(p.name)}"></div>`).join('');
+    $('playerCount').textContent = playerEntries.length;
+    $('removePlayerBtn').disabled = playerEntries.length <= 2;
+    $('addPlayerBtn').disabled = playerEntries.length >= 40;
+    document.querySelectorAll('[data-player-id]').forEach(input => input.addEventListener('input', ev => {
+      const entry = playerEntries.find(p => p.id === ev.target.dataset.playerId);
+      if (entry) entry.name = ev.target.value;
+    }));
+  }
+  function validateSession(session) {
+    if (!session || session.type !== SESSION_TYPE || session.version !== VERSION) throw new Error('Este código no parece una partida compatible de Misiones Secretas. Crea un código nuevo desde la versión actual.');
+    if (!session.sessionId || !Array.isArray(session.players) || ![20,25,30].includes(Number(session.durationMinutes)) || !Number.isFinite(session.startedAt)) throw new Error('El código de la partida está incompleto o dañado.');
+    if (session.players.length < 2 || session.players.length > 40) throw new Error('La partida debe tener entre 2 y 40 jugadores.');
+    const ids = new Set(), names = new Set(), missions = new Set();
+    for (const p of session.players) {
+      if (!p.id || !String(p.name || '').trim() || !String(p.mission || '').trim()) throw new Error('El código tiene un jugador sin nombre o sin misión.');
+      if (ids.has(p.id)) throw new Error('El código contiene un jugador duplicado.');
+      const normalName = p.name.trim().toLocaleLowerCase('es');
+      if (names.has(normalName)) throw new Error(`El nombre «${p.name}» está repetido. Usa nombres distintos.`);
+      if (missions.has(p.mission)) throw new Error('Hay misiones repetidas en el código.');
+      ids.add(p.id); names.add(normalName); missions.add(p.mission);
+    }
+    return session;
+  }
+  function setMode(mode) {
+    const create = mode === 'create';
+    $('createPanel').classList.toggle('hidden', !create);
+    $('importPanel').classList.toggle('hidden', create);
+    $('showCreateBtn').classList.toggle('active', create);
+    $('showImportBtn').classList.toggle('active', !create);
+    $('readyPanel').classList.add('hidden');
+    $('createStatus').textContent = '';
+    $('importStatus').textContent = '';
+  }
+  function populateIdentitySelect(session) {
+    $('identitySelect').innerHTML = session.players.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
+    try {
+      const previousId = localStorage.getItem(`misiones-secretas:last-player:${session.sessionId}`);
+      if (previousId && session.players.some(p => p.id === previousId)) $('identitySelect').value = previousId;
+    } catch (_) {}
+  }
+  function showReady(session, code, summary) {
+    pendingSession = validateSession(session);
+    $('shareCode').value = code;
+    $('readySummary').textContent = summary;
+    populateIdentitySelect(pendingSession);
+    $('readyPanel').classList.remove('hidden');
+    $('readyPanel').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  function createSession() {
+    $('createStatus').textContent = '';
+    const names = playerEntries.map(p => p.name.trim());
+    if (names.some(n => !n)) { $('createStatus').textContent = 'Rellena todos los nombres antes de crear la partida.'; $('createStatus').className = 'status error'; return; }
+    const normalized = names.map(n => n.toLocaleLowerCase('es'));
+    if (new Set(normalized).size !== names.length) { $('createStatus').textContent = 'Hay nombres repetidos. Pon un nombre diferente a cada jugador.'; $('createStatus').className = 'status error'; return; }
+    const catalog = missionsFromEditor();
+    if (catalog.length < names.length) { $('createStatus').textContent = `Hay ${catalog.length} misiones para ${names.length} jugadores. Añade al menos ${names.length - catalog.length} misión(es) al catálogo.`; $('createStatus').className = 'status error'; return; }
+    const missionSet = shuffle(catalog).slice(0, names.length);
+    const missionsAssigned = shuffle(missionSet);
+    const session = {
+      type: SESSION_TYPE, version: VERSION, sessionId: makeId(),
+      durationMinutes: Number($('durationSelect').value), startedAt: Date.now(),
+      players: shuffle(playerEntries.map((p, i) => ({id:p.id, name:names[i], mission:missionsAssigned[i]})))
+    };
+    // Asegura que el mismo código importado en cada móvil conserva las mismas asignaciones.
+    const code = encodeBase64Url(session);
+    try { localStorage.setItem('misiones-secretas:last-session-code', code); } catch (_) {}
+    showReady(session, code, `Partida de ${session.players.length} jugadores · ${session.durationMinutes} minutos. El reloj empieza ahora.`);
+  }
+  function loadSessionCode() {
+    $('importStatus').textContent = '';
+    try {
+      const code = $('importCode').value.trim();
+      const session = validateSession(decodeBase64Url(code));
+      showReady(session, encodeBase64Url(session), `Partida importada · ${session.players.length} jugadores · ${session.durationMinutes} minutos. Selecciona tu nombre.`);
+    } catch (err) { $('importStatus').textContent = err.message || 'No se pudo cargar ese código.'; $('importStatus').className = 'status error'; }
+  }
+  function notesKey(session, playerId) { return `misiones-secretas:notes:${session.sessionId}:${playerId}`; }
+  function loadNotes(session, playerId) {
+    try { return JSON.parse(localStorage.getItem(notesKey(session, playerId)) || '{}'); } catch (_) { return {}; }
+  }
+  function saveNotes(session, playerId, notes) {
+    try { localStorage.setItem(notesKey(session, playerId), JSON.stringify(notes)); return true; } catch (_) { return false; }
+  }
+  function getPlayerName(id) { return currentSession.players.find(p => p.id === id)?.name || 'Jugador'; }
+  function enterGame() {
+    if (!pendingSession) return;
+    const playerId = $('identitySelect').value;
+    const player = pendingSession.players.find(p => p.id === playerId);
+    if (!player) { $('identityStatus').textContent = 'Selecciona tu nombre.'; $('identityStatus').className = 'status error'; return; }
+    currentSession = pendingSession;
+    currentPlayerId = playerId;
+    try {
+      localStorage.setItem('misiones-secretas:active', JSON.stringify({session:currentSession,playerId:currentPlayerId}));
+      localStorage.setItem(`misiones-secretas:last-player:${currentSession.sessionId}`, currentPlayerId);
+    } catch (_) {}
+    $('setupView').classList.add('hidden');
+    $('gameView').classList.remove('hidden');
+    $('playerNameTitle').textContent = player.name;
+    $('gameMeta').textContent = `${currentSession.players.length} jugadores · partida de ${currentSession.durationMinutes} min`;
+    $('myMissionText').textContent = player.mission;
+    renderNotes();
+    $('revealList').classList.add('hidden'); $('revealBtn').textContent = '👀 Revelar todas las misiones (al terminar)'; revealShown = false;
+    $('revealBtn').disabled = Date.now() < currentSession.startedAt + currentSession.durationMinutes * 60 * 1000;
+    $('gameStatus').textContent = '';
+    if (timerInterval) clearInterval(timerInterval);
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 1000);
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function renderNotes() {
+    const otherPlayers = currentSession.players.filter(p => p.id !== currentPlayerId);
+    const notes = loadNotes(currentSession, currentPlayerId);
+    $('noteList').innerHTML = otherPlayers.map((p, index) => `<article class="note-card"><div class="note-card-head"><h3>${index + 1}. ${escapeHtml(p.name)}</h3><span class="saved" id="saved-${escapeHtml(p.id)}">Guardado</span></div><textarea data-note-player="${escapeHtml(p.id)}" maxlength="2500" aria-label="Sospecha sobre ${escapeHtml(p.name)}" placeholder="¿Qué crees que está intentando hacer? Escribe aquí tus sospechas…">${escapeHtml(notes[p.id] || '')}</textarea><div class="hint">Tu descripción libre · se guarda en este móvil</div></article>`).join('');
+    document.querySelectorAll('[data-note-player]').forEach(area => area.addEventListener('input', ev => {
+      const notePlayerId = ev.currentTarget.dataset.notePlayer;
+      const latest = loadNotes(currentSession, currentPlayerId);
+      latest[notePlayerId] = ev.currentTarget.value;
+      const saved = saveNotes(currentSession, currentPlayerId, latest);
+      const label = $(`saved-${notePlayerId}`);
+      if (label) label.textContent = saved ? 'Guardado ✓' : 'No se pudo guardar';
+    }));
+  }
+  function updateTimer() {
+    if (!currentSession) return;
+    const durationMs = currentSession.durationMinutes * 60 * 1000;
+    const elapsed = Date.now() - currentSession.startedAt;
+    const remaining = Math.max(0, durationMs - elapsed);
+    const sec = Math.ceil(remaining / 1000);
+    const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+    const ss = String(sec % 60).padStart(2, '0');
+    $('timerDisplay').textContent = `${mm}:${ss}`;
+    $('timerDisplay').classList.toggle('urgent', remaining <= 60 * 1000);
+    $('timerProgress').style.width = `${Math.max(0, remaining / durationMs * 100)}%`;
+    if (remaining <= 0) {
+      $('revealBtn').disabled = false;
+      $('revealBtn').textContent = revealShown ? '🙈 Ocultar misiones' : '👀 Revelar todas las misiones';
+      $('timerDisplay').textContent = '00:00';
+      $('gameStatus').textContent = '⏰ Tiempo terminado. Revelad las misiones cuando estéis listos para comparar las respuestas.';
+      $('gameStatus').className = 'status success';
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    }
+  }
+  function revealMissions() {
+    if (!currentSession || Date.now() < currentSession.startedAt + currentSession.durationMinutes * 60 * 1000) return;
+    revealShown = !revealShown;
+    $('revealList').classList.toggle('hidden', !revealShown);
+    $('revealBtn').textContent = revealShown ? '🙈 Ocultar misiones' : '👀 Revelar todas las misiones';
+    if (!revealShown) return;
+    $('revealList').innerHTML = currentSession.players.map((p, index) => `<article class="mission-reveal"><strong>${index + 1}. ${escapeHtml(p.name)}</strong><p>${escapeHtml(p.mission)}</p></article>`).join('');
+    $('revealList').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+  function copyText(text, statusElement) {
+    if (!text) { statusElement.textContent = 'No hay nada que copiar.'; statusElement.className = 'status error'; return; }
+    const fallback = () => {
+      const tmp = document.createElement('textarea'); tmp.value = text; tmp.style.position = 'fixed'; tmp.style.opacity = '0'; document.body.appendChild(tmp); tmp.select();
+      try { document.execCommand('copy'); statusElement.textContent = 'Código copiado.'; statusElement.className = 'status success'; }
+      catch (_) { statusElement.textContent = 'No se pudo copiar automáticamente. Mantén pulsado el texto y cópialo.'; statusElement.className = 'status error'; }
+      tmp.remove();
+    };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(() => { statusElement.textContent = 'Copiado ✓'; statusElement.className = 'status success'; }).catch(fallback);
+    else fallback();
+  }
+  function copyMyNotes() {
+    if (!currentSession) return;
+    const player = currentSession.players.find(p => p.id === currentPlayerId);
+    const notes = loadNotes(currentSession, currentPlayerId);
+    const lines = [`Misiones Secretas — ${player.name}`, '', `MI MISIÓN: ${player.mission}`, '', 'MIS SOSPECHAS:', ...currentSession.players.filter(p => p.id !== currentPlayerId).map(p => `${p.name}: ${String(notes[p.id] || '(sin notas)').trim()}`)];
+    copyText(lines.join('\n'), $('gameStatus'));
+  }
+  function returnToSetup() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    try { localStorage.removeItem('misiones-secretas:active'); } catch (_) {}
+    currentSession = null; currentPlayerId = null; pendingSession = null;
+    $('gameView').classList.add('hidden'); $('setupView').classList.remove('hidden');
+    $('readyPanel').classList.add('hidden');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  $('showCreateBtn').addEventListener('click', () => setMode('create'));
+  $('showImportBtn').addEventListener('click', () => setMode('import'));
+  $('addPlayerBtn').addEventListener('click', () => { addPlayer(''); $('createStatus').textContent = ''; });
+  $('removePlayerBtn').addEventListener('click', removePlayer);
+  $('createBtn').addEventListener('click', createSession);
+  $('loadCodeBtn').addEventListener('click', loadSessionCode);
+  $('enterGameBtn').addEventListener('click', enterGame);
+  $('revealBtn').addEventListener('click', revealMissions);
+  $('copyNotesBtn').addEventListener('click', copyMyNotes);
+  $('changeGameBtn').addEventListener('click', returnToSetup);
+  $('copyCodeBtn').addEventListener('click', () => copyText($('shareCode').value, $('identityStatus')));
+  $('backToSetupBtn').addEventListener('click', () => { $('readyPanel').classList.add('hidden'); window.scrollTo({top:0,behavior:'smooth'}); });
+  $('saveMissionsBtn').addEventListener('click', () => { saveCustomMissions(); $('missionEditorHelp').textContent = 'Lista guardada en este móvil.'; });
+  $('restoreMissionsBtn').addEventListener('click', () => { $('missionEditor').value = DEFAULT_MISSIONS.join('\n'); saveCustomMissions(); });
+  $('missionEditor').addEventListener('input', updateMissionCount);
+
+  function boot() {
+    let custom = null;
+    try { custom = localStorage.getItem('misiones-secretas:custom-missions'); } catch (_) {}
+    $('missionEditor').value = custom && custom.trim() ? custom : DEFAULT_MISSIONS.join('\n');
+    updateMissionCount();
+    for (let i = 1; i <= 9; i++) addPlayer(`Jugador ${i}`);
+    let active = null;
+    try { active = JSON.parse(localStorage.getItem('misiones-secretas:active') || 'null'); } catch (_) {}
+    if (active && active.session && active.playerId) {
+      try {
+        currentSession = validateSession(active.session);
+        currentPlayerId = active.playerId;
+        if (!currentSession.players.some(p => p.id === currentPlayerId)) throw new Error('Jugador no encontrado');
+        pendingSession = currentSession;
+        populateIdentitySelect(currentSession);
+        $('identitySelect').value = currentPlayerId;
+        enterGame();
+      } catch (_) { try { localStorage.removeItem('misiones-secretas:active'); } catch (_) {} }
+    }
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
